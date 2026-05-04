@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (MiKTeX 25.4) (preloaded format=pdflatex 2025.10.1)  4 MAY 2026 13:03
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (MiKTeX 25.4) (preloaded format=pdflatex 2025.10.1)  4 MAY 2026 13:10
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -410,13 +410,13 @@ l.20 \newpage
 [3
 
 ]
-Overfull \hbox (3.64764pt too wide) in paragraph at lines 43--44
+Overfull \hbox (3.64764pt too wide) in paragraph at lines 49--50
 []\OT1/cmr/m/n/12 Los ar-chi-vos de con-fi-gu-ra-ci^^Son prin-ci-pa-les de RTS2
  se alo-jan en el di-rec-to-rio \OT1/cmtt/m/n/12 /etc/rts2/\OT1/cmr/m/n/12 . 
  []
 
 LaTeX Font Info:    Font shape `OT1/cmtt/bx/n' in size <14.4> not available
-(Font)              Font shape `OT1/cmtt/m/n' tried instead on input line 45.
+(Font)              Font shape `OT1/cmtt/m/n' tried instead on input line 51.
 
 
 [4
@@ -437,15 +437,8 @@ LaTeX Info: Redefining \% on input line 11.
 LaTeX2e <2025-06-01> patch level 1
 L3 programming layer <2025-09-02>
  ***********
-
-
-Package rerunfilecheck Warning: File `main.out' has changed.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `main.out':
-(rerunfilecheck)             Before: E642DCBBF1693CEF4F32D3F71EC4B770;1895
-(rerunfilecheck)             After:  C663EA0B03B46D76FB1B1961CE0794FA;1971.
+Package rerunfilecheck Info: File `main.out' has not changed.
+(rerunfilecheck)             Checksum: C663EA0B03B46D76FB1B1961CE0794FA;1971.
  ) 
 Here is how much of TeX's memory you used:
  10706 strings out of 468130
@@ -454,14 +447,14 @@ Here is how much of TeX's memory you used:
  39211 multiletter control sequences out of 15000+600000
  632678 words of font info for 60 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,7n,79p,356b,481s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,7n,79p,491b,481s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <C:/Users/maria/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/
 cmbx12.pfb><C:/Users/maria/AppData/Local/Programs/MiKTeX/fonts/type1/public/ams
 fonts/cm/cmr12.pfb><C:/Users/maria/AppData/Local/Programs/MiKTeX/fonts/type1/pu
 blic/amsfonts/cm/cmr17.pfb><C:/Users/maria/AppData/Local/Programs/MiKTeX/fonts/
 type1/public/amsfonts/cm/cmti12.pfb><C:/Users/maria/AppData/Local/Programs/MiKT
 eX/fonts/type1/public/amsfonts/cm/cmtt12.pfb>
-Output written on main.pdf (7 pages, 85022 bytes).
+Output written on main.pdf (7 pages, 86425 bytes).
 PDF statistics:
  115 PDF objects out of 1000 (max. 8388607)
  17 named destinations out of 1000 (max. 500000)
