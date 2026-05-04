@@ -1,0 +1,63 @@
+\documentclass[12pt,a4paper,titlepage]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{graphicx}
+\usepackage[hidelinks]{hyperref}
+\usepackage{geometry}
+\geometry{a4paper, margin=2.5cm}
+\usepackage{titlesec}
+\newcommand{\sectionbreak}{\clearpage}
+
+\title{Manual de Operación y Automatización del Observatorio\\
+\large Basado en RTS2 (Remote Telescope System 2)}
+\author{Facultad de Ciencias}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Introducción}
+Este manual describe la configuración, el despliegue y el funcionamiento del sistema RTS2 para la automatización del telescopio Meade LX200 y la cúpula del observatorio de la facultad. El objetivo es proporcionar a los alumnos una guía clara de cómo operar el sistema.
+
+\section{Arquitectura del Sistema RTS2}
+RTS2 utiliza una arquitectura basada en demonios (servicios en segundo plano) que se comunican de forma centralizada a través del puerto 8889 por defecto.
+
+\subsection{Demonios Principales}
+\begin{itemize}
+    \item \textbf{centrald}: Servicio central que coordina las comunicaciones. Debe ser siempre el primero en ejecutarse.
+    \item \textbf{teld}: Demonio de control del telescopio. Para nuestro telescopio \textbf{Meade LX200}, utilizaremos el binario \texttt{rts2-teld-lx200} (o equivalente).
+    \item \textbf{dome}: Demonio de control de la cúpula (Hardware pendiente de documentar).
+\end{itemize}
+
+\section{Configuración del Entorno (Linux)}
+Los archivos de configuración principales de RTS2 se alojan en el directorio \texttt{/etc/rts2/}. 
+
+\subsection{Archivo \texttt{rts2.ini}}
+(En esta sección se documentará el contenido del archivo principal extraído del ordenador del laboratorio).
+
+\subsection{Configuración del Telescopio (Meade LX200)}
+El Meade LX200 se conecta típicamente a través de un puerto serie o adaptador USB-Serie (ej: \texttt{/dev/ttyUSB0}).
+(Aquí añadiremos las líneas de configuración exactas una vez tengamos los archivos).
+
+\section{Arranque y Operación}
+\subsection{Comandos de Inicio}
+Para iniciar el sistema de forma manual, el orden recomendado es:
+\begin{verbatim}
+$ rts2-centrald
+$ rts2-teld-lx200 -d /dev/ttyUSB0
+...
+\end{verbatim}
+
+\subsection{Interfaz de Usuario}
+(Sección para documentar qué interfaz gráfica o de terminal se usa para mandar comandos, como \texttt{rts2-mon}).
+
+\section{Solución de Problemas Frecuentes (Troubleshooting)}
+\begin{itemize}
+    \item \textbf{Problema:} El telescopio no responde a los comandos.
+    \item \textbf{Solución:} Verificar permisos del puerto serie (\texttt{sudo chmod a+rw /dev/ttyUSB0}) y comprobar logs en \texttt{/var/log/syslog} o la salida del demonio.
+\end{itemize}
+
+\end{document}
