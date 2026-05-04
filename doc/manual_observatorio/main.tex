@@ -23,13 +23,20 @@
 Este manual describe la configuración, el despliegue y el funcionamiento del sistema RTS2 para la automatización del telescopio Meade LX200 y la cúpula del observatorio de la facultad. El objetivo es proporcionar a los alumnos una guía clara de cómo operar el sistema.
 
 \section{Arquitectura del Sistema RTS2}
-RTS2 utiliza una arquitectura basada en demonios (servicios en segundo plano) que se comunican de forma centralizada a través del puerto 8889 por defecto.
+RTS2 (Remote Telescope System 2) está diseñado como un sistema distribuido y modular basado en \textit{demonios} (procesos que se ejecutan en segundo plano en Linux). Esto permite aislar los fallos: si la cámara falla, el demonio de la cámara se reinicia sin afectar al seguimiento del telescopio.
 
-\subsection{Demonios Principales}
+Todos los demonios se comunican entre sí enviando mensajes a través de un puerto de red local (habitualmente el puerto 8889).
+
+\subsection{Componentes y Demonios Principales}
+En nuestro observatorio, la arquitectura se compondrá principalmente de los siguientes elementos:
+
 \begin{itemize}
-    \item \textbf{centrald}: Servicio central que coordina las comunicaciones. Debe ser siempre el primero en ejecutarse.
-    \item \textbf{teld}: Demonio de control del telescopio. Para nuestro telescopio \textbf{Meade LX200}, utilizaremos el binario \texttt{rts2-teld-lx200} (o equivalente).
-    \item \textbf{dome}: Demonio de control de la cúpula (Hardware pendiente de documentar).
+    \item \textbf{centrald}: Es el cerebro del sistema y el enrutador de mensajes. Conoce el estado global y permite que los demás demonios hablen entre ellos. Debe ejecutarse siempre el primero.
+    \item \textbf{teld} (Telescope Daemon): Controla el apuntado, el seguimiento y el movimiento de la montura. Para nuestro telescopio, utilizaremos el módulo específico de \textbf{Meade LX200}.
+    \item \textbf{dome} (Dome Daemon): Controla el movimiento de la cúpula, asegurándose de que la apertura (la rendija) esté siempre alineada con donde apunta el telescopio.
+    \item \textbf{camd} (Camera Daemon): Se encarga de controlar la cámara principal, gestionar los tiempos de exposición y la refrigeración.
+    \item \textbf{execd} (Execution Daemon): Es el encargado de leer los planes de observación (qué observar, cuándo y cómo) y enviar las órdenes en secuencia al resto del sistema.
+    \item \textbf{Base de Datos (PostgreSQL)}: RTS2 guarda todos los objetivos astronómicos, registros de observación y logs en una base de datos central para poder automatizar el observatorio.
 \end{itemize}
 
 \section{Configuración del Entorno (Linux)}
