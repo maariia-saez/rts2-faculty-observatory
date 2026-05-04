@@ -20,7 +20,13 @@
 \newpage
 
 \section{Introducción}
-Este manual describe la configuración, el despliegue y el funcionamiento del sistema RTS2 para la automatización del telescopio Meade LX200 y la cúpula del observatorio de la facultad. El objetivo es proporcionar a los alumnos una guía clara de cómo operar el sistema.
+El presente documento constituye el Manual Oficial de Operación y Automatización del observatorio astronómico de la Escuela Técnica Superior de Ingenieros Informáticos (ETSIINF) de la Universidad Politécnica de Madrid (UPM).
+
+Este proyecto nace de la iniciativa de un grupo de estudiantes con el objetivo de reparar, actualizar y automatizar las instalaciones del observatorio, el cual cuenta como instrumento principal con un telescopio \textbf{Meade LX200} y una cúpula motorizada.
+
+Para llevar a cabo esta automatización, se ha adoptado el software \textbf{RTS2} (Remote Telescope System 2), un entorno de código abierto ampliamente utilizado a nivel mundial para el control robótico de observatorios astronómicos. RTS2 permite no solo coordinar el movimiento del telescopio y la apertura de la cúpula, sino también programar secuencias de observación desatendidas, gestionar cámaras y registrar condiciones meteorológicas.
+
+El objetivo principal de esta guía es proporcionar a los futuros alumnos e investigadores de la facultad un recurso claro, técnico y estructurado. Aquí se detalla desde la configuración inicial en sistemas Linux y la compilación del código fuente, hasta los comandos diarios de operación y la resolución de problemas (troubleshooting).
 
 \section{Arquitectura del Sistema RTS2}
 RTS2 (Remote Telescope System 2) está diseñado como un sistema distribuido y modular basado en \textit{demonios} (procesos que se ejecutan en segundo plano en Linux). Esto permite aislar los fallos: si la cámara falla, el demonio de la cámara se reinicia sin afectar al seguimiento del telescopio.
