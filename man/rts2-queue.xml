@@ -1,0 +1,256 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" [
+
+  <!ENTITY dhfirstname "<firstname>Petr</firstname>">
+  <!ENTITY dhsurname   "<surname>Kubanek</surname>">
+  <!ENTITY dhdate      "<date>2011-05-17</date>">
+  <!ENTITY dhsection   "<manvolnum>1</manvolnum>">
+  <!ENTITY dhemail     "<email>petr@kubanek.net</email>">
+  <!ENTITY dhusername  "Petr Kubanek">
+  <!ENTITY dhpackage   "rts2-queue">
+
+  <!ENTITY % rts2 SYSTEM "rts2.ent">
+  %rts2;
+]>
+
+<refentry>
+  <refentryinfo>
+    <title>&dhpackage;</title>
+    <productname>rts2</productname>
+    <productnumber>&rts2version;</productnumber>
+    &dhdate;
+    <authorgroup>
+      <author>
+        &dhfirstname;
+        &dhsurname;
+	<contrib>Wrote this manual page.</contrib>
+	<address>
+          &dhemail;
+	</address>
+      </author>
+    </authorgroup>
+    <copyright>
+      <year>2011</year>
+      <holder>&fzu;</holder>
+    </copyright>
+    &legal;
+  </refentryinfo>
+  <refmeta>
+    <refentrytitle>&dhpackage;</refentrytitle>
+    &dhsection;
+  </refmeta>
+  <refnamediv>
+    <refname>&dhpackage;</refname>
+    <refpurpose>Manipulate selector queues.</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>&dhpackage;</command>
+      <arg choice='opt'><option>-h</option></arg>
+      <arg choice='opt'><option>--help</option></arg>
+    </cmdsynopsis>  
+    <cmdsynopsis>
+      <command>&dhpackage;</command>
+      <arg choice='opt'><option>--unique</option></arg>
+      <arg choice='opt'><option>--clear</option></arg>
+      <arg choice='opt'><option>--queue</option>=<replaceable class='parameter'>QUEUE</replaceable></arg>
+      <arg choice='opt'><option>--server</option>=<replaceable class='parameter'>SERVER</replaceable></arg>
+      <arg choice='opt'><option>--user</option>=<replaceable class='parameter'>USERNAME</replaceable></arg>
+      <arg choice='opt'><option>--password</option>=<replaceable class='parameter'>PASSWORD</replaceable></arg>
+      <arg choice='opt'><option>--quiet</option></arg>
+      <arg choice='opt'><option>--debug</option></arg>
+      <arg choice='opt'><option>--create</option> <replaceable class='parameter'>TARGET NAME</replaceable></arg>
+      <arg choice='opt'><option>--create-radec</option> <replaceable class='parameter'>TARGET RA DEC</replaceable></arg>
+      <arg choice='opt' rep='repeat'>target name</arg>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+  <refsect1>
+    <title>DESCRIPTION</title>
+
+    <para>
+      Provides queue management functions. Queues are used in scheduling, and are particularly usefull for 
+      <emphasis>human-in-the-loop</emphasis> scheduling.
+    </para>
+
+    <para>
+      Observers can append or clear targets from the queue. Queue name and
+      server hosting the API can be specified as parameters.
+    </para>  
+
+  </refsect1>
+  <refsect1>
+    <title>OPTIONS</title>
+
+    &optiongnu;
+
+    <variablelist>
+      <varlistentry>
+        <term><option>-h</option></term>
+        <term><option>--help</option></term>
+	<listitem>
+	  <para>
+	    Prints short help describing available options.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--unique</option></term>
+	<listitem>
+	  <para>
+	    When resolving target names, only unique names will be used. If the
+	    name matches two or more targets, error will be printed and the
+	    command will exit, not performing any modification to the queue.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--clear</option></term>
+	<listitem>
+	  <para>
+	    Clear queue. Queue content is printed on command line.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--queue</option>=<replaceable class='parameter'>QUEUE</replaceable></term>
+	<listitem>
+	  <para>
+	    Specify queue which will be used. The default is
+	    <emphasis>plan</emphasis> queue.
+
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--with-times</option></term>
+	<listitem>
+	  <para>
+	    Specify observation times with target. Values starting with + are
+	    time from now. Please see examples below for valid observing times.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--server</option>=<replaceable class='parameter'>SERVER</replaceable></term>
+	<listitem>
+	  <para>
+	    Specify server which will be used. The server full URL must be
+	    entered, possibly with username and password. The default is
+	    <emphasis>localhost:8889/api</emphasis>.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--user</option>=<replaceable class='parameter'>USERNAME</replaceable></term>
+	<listitem>
+	  <para>
+	    Specify username for server login.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--password</option>=<replaceable class='parameter'>PASSWORD</replaceable></term>
+	<listitem>
+	  <para>
+	    Specify password for server login.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--quiet</option></term>
+	<listitem>
+	  <para>
+	    Be quiet, do not print anything on standard output.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--debug</option></term>
+	<listitem>
+	  <para>
+	    Print RTS2 JSON calls needed to acomplish the goal.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--create</option></term>
+	<listitem>
+	  <para>
+	    Create new target with the given name. This option must be followed
+	    with <option>--create-radec</option> to specify target coordinates.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--create-radec</option></term>
+	<listitem>
+	  <para>
+	    Specify new target coordinates. This option can only be specified together with
+	    <option>--create</option> option.
+	  </para>
+	</listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+  <refsect1>
+    <title>Target arguments</title>
+    <para>
+      if any target names are added to the command, their IDs will be resolved,
+	and their IDs will be added to the queue specified with
+	<option>--queue</option> option (or to <emphasis>plan</emphasis>, which
+	is the default queue).
+    </para>
+    &targetnamesexp;
+  </refsect1>
+  <refsect1 xml:id='examples'>
+    <title>Examples</title>
+    <para>
+      Following will place on queue named <emphasis>manual</emphasis> all
+      targets beginning with <emphasis>B</emphasis>.  It will first clear
+      queue, so target entries will not be added to the targets already in the
+      queue.
+    </para> 
+    <screen>
+      <command>&dhpackage;</command> <option>--clear</option> <option>--queue</option> <replaceable class='parameter'>manual</replaceable> <replaceable class='argument'>B%</replaceable>
+    </screen>
+    <para>
+      Following will place on queue named <emphasis>manual</emphasis> all
+      targets beginning with <emphasis>B</emphasis>.  It will first clear
+      queue, so target entries will not be added to the targets already in the
+      queue.
+    </para> 
+    <screen>
+      <command>&dhpackage;</command> <option>--clear</option> <option>--queue</option> <replaceable class='parameter'>manual</replaceable> <replaceable class='argument'>B%</replaceable>
+    </screen>
+    <para>
+      The next command queues targets with ID 1000 and specify starting time 1h from now:
+    </para>
+    <screen>
+      <command>&dhpackage;</command> <option>--clear</option> <option>--with-times</option> <option>--queue</option> <replaceable class='parameter'>manual</replaceable> <replaceable class='argument'>1000</replaceable> <replaceable class='argument'>+3600</replaceable> <replaceable class='argument'>-</replaceable>
+    </screen>
+  </refsect1>
+  <refsect1>
+    <title>SEE ALSO</title>
+
+    <para>
+      <citerefentry>
+        <refentrytitle>rts2.queues</refentrytitle>
+	<manvolnum>5</manvolnum>
+      </citerefentry>,
+      <citerefentry>
+        <refentrytitle>rts2</refentrytitle>
+	<manvolnum>7</manvolnum>
+      </citerefentry>,
+      <citerefentry>
+        <refentrytitle>rts2-selector</refentrytitle>
+	<manvolnum>1</manvolnum>
+      </citerefentry>,
+      <citerefentry>
+        <refentrytitle>rts2-seltest</refentrytitle>
+	<manvolnum>1</manvolnum>
+      </citerefentry>
+    </para>  
+
+  </refsect1>
+</refentry>

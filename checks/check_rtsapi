@@ -1,0 +1,120 @@
+#!/usr/bin/env python
+
+import sys
+import unittest
+import subprocess
+import time
+import numpy
+import os
+
+sys.path.append('../python/rts2')
+
+try:
+    import rtsapi
+except:
+    raise
+
+
+class JSONTest(unittest.TestCase):
+
+    def setUp(self):
+        lock_prefix = '--lock-prefix=./rts2_test_'
+        server = '--server=localhost:6167'
+        config = '--config=rts2.ini'
+        try:
+            os.unlink('logins')
+        except OSError:
+            pass
+        havedb = False
+        subprocess.call([
+            '../src/db/rts2-user-nondb', '--userfile', 'logins',
+            '-a', 'pytest', '--password', 'pytest',
+        ])
+        self.centrald = subprocess.Popen([
+            '../src/centrald/rts2-centrald',
+            '-i', '--debug',
+            lock_prefix, config,
+            '--local-port=6167'
+        ])
+        out, err = subprocess.Popen([
+            '../src/httpd/rts2-httpd', '--version'
+        ], stdout=subprocess.PIPE).communicate()
+        for l in out.splitlines():
+            try:
+                if l.index('pgsql'):
+                    havedb = True
+                    break
+            except ValueError:
+                pass
+
+        httpd_args = [
+            '../src/httpd/rts2-httpd',
+            '-i', '--debug',
+            lock_prefix, server, config,
+            '-p 8889'
+        ]
+        if havedb:
+            httpd_args.append('--database=')
+
+        print('starting httpd with', httpd_args)
+        self.httpd = subprocess.Popen(httpd_args)
+        self.camd_nf = subprocess.Popen([
+            '../src/camd/rts2-camd-dummy',
+            '-i', '--debug', '-d NF',
+            lock_prefix, server,
+            '--width=5000', '--height=5000'
+        ])
+
+        print('starting multidev')
+        self.multi_sensor = subprocess.Popen([
+            '../src/sensord/rts2-sensor-multi',
+            '-i', '--debug', '-d MS',
+            lock_prefix, server
+        ])
+
+        try:
+            os.unlink('DUT1')
+        except OSError:
+            pass
+
+        self.teld_nf = subprocess.Popen([
+            '../src/teld/rts2-teld-dummy',
+            '-i', '--debug', '-d T0',
+            lock_prefix, server,
+            '--dut1-filename=DUT1'
+        ])
+
+        time.sleep(10)
+        self.j = rtsapi.createProxy('http://localhost:8889', 'pytest', 'pytest')
+
+    def tearDown(self):
+        self.teld_nf.terminate()
+        self.camd_nf.terminate()
+        self.multi_sensor.terminate()
+        self.httpd.terminate()
+        self.centrald.terminate()
+        os.unlink('logins')
+
+    def testCentrald(self):
+        self.assertEqual(self.j.getValue('centrald', 'longitude', True), -15)
+        self.assertEqual(self.j.getValue('centrald', 'latitude'), 50)
+
+        self.assertEqual(self.j.getValue('NF', 'chips', True), 1)
+        data = self.j.takeImage('NF')
+        self.j.refresh()
+        self.assertEqual(self.j.getValue('NF', 'average'), numpy.average(data))
+
+    def testMulti(self):
+        time.sleep(300)
+        self.j.refresh()
+        self.assertNotEqual(self.j.getValue('MS1', 'test_string', True), '')
+        self.assertNotEqual(self.j.getValue('MS2', 'test_string'), '')
+
+    def testMount(self):
+        self.j.executeCommand('T0', 'getdut1')
+
+        self.j.setValue('T0', 'AMBTEMP', 20)
+        self.j.refresh()
+        self.assertEqual(self.j.getValue('T0', 'AMBTEMP', True), 20)
+
+unittest.main()

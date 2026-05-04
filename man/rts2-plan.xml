@@ -1,0 +1,334 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd" [
+	
+  <!ENTITY dhfirstname "<firstname>Petr</firstname>">
+  <!ENTITY dhsurname   "<surname>Kubanek</surname>">
+  <!ENTITY dhdate      "<date>2011-01-24</date>">
+  <!ENTITY dhsection   "<manvolnum>1</manvolnum>">
+  <!ENTITY dhemail     "<email>petr@kubanek.net</email>">
+  <!ENTITY dhusername  "Petr Kubanek">
+  <!ENTITY dhpackage   "rts2-plan">
+
+  <!ENTITY % rts2 SYSTEM "rts2.ent">
+  %rts2;
+]>
+
+<refentry>
+  <refentryinfo>
+    <title>&dhpackage;</title>
+    <productname>rts2</productname>
+    <productnumber>&rts2version;</productnumber>
+    &dhdate;
+    <authorgroup>
+      <author>
+        &dhfirstname;
+        &dhsurname;
+	<contrib>Wrote this manual page.</contrib>
+	<address>
+          &dhemail;
+	</address>
+      </author>
+    </authorgroup>
+    <copyright>
+      <year>2005-2010</year>
+      <holder>&dhusername;</holder>
+    </copyright>
+    <copyright>
+      <year>2011</year>
+      <holder>&fzu;</holder>
+    </copyright>
+    &legal;
+  </refentryinfo>
+  <refmeta>
+    <refentrytitle>&dhpackage;</refentrytitle>
+    &dhsection;
+  </refmeta>
+  <refnamediv>
+    <refname>&dhpackage;</refname>
+    <refpurpose>Manage fixed-time observation scheduling.</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>&dhpackage;</command>
+      <arg choice='plain'>
+        <arg><option>--add</option>
+	  <arg choice='req' rep='repeat'><replaceable class="parameter">target name or ID</replaceable> <replaceable class="parameter">start time</replaceable> <arg><replaceable class="parameter">end time</replaceable></arg></arg>
+	</arg>
+	<arg>
+          <option>--dump</option>
+          <arg><option>-n</option> <replaceable class="parameter">YYYY-MM-DD</replaceable></arg>
+	</arg>  
+        <arg><option>--load</option> <replaceable class="paramter">filename</replaceable></arg>
+        <arg><option>--generate</option></arg>
+      </arg>
+      <arg choice='plain'>	
+        <arg><option>--target</option> <arg choice='req' rep='repeat'><replaceable class='parameter'>target id or name</replaceable></arg></arg>
+      </arg>
+      <arg choice='plain'>	
+        <arg><option>--copy</option> 
+          <arg choice='req'><option>-n</option> <replaceable class="parameter">YYYY-MM-DD</replaceable></arg>
+          <arg choice='req' rep='repeat'><replaceable class="parameter">YYYY-MM-DD</replaceable></arg>
+        </arg>
+      </arg>
+      <arg choice='plain'>	
+        <arg><option>--fixed-copy</option> 
+          <arg choice='req'><option>-n</option> <replaceable class="parameter">YYYY-MM-DD</replaceable></arg>
+          <arg choice='req' rep='repeat'><replaceable class="parameter">YYYY-MM-DD</replaceable></arg>
+        </arg>
+      </arg>
+      <arg choice='plain'>	
+        <arg><option>--delete</option>
+          <arg><option>-n</option> <replaceable class="parameter">YYYY-MM-DD</replaceable></arg>
+	  <arg choice='choice' rep='repeat'><replaceable class="parameter">plan ID</replaceable></arg>
+	</arg>  
+      </arg>	
+      &dbapp;
+    </cmdsynopsis>
+
+    &helpsynopsis;
+
+  </refsynopsisdiv>
+
+  <refsect1 id="description">
+    <title>DESCRIPTION</title>
+
+    <para>
+      With <command>&dhpackage;</command> users can manipulate target scheduling.
+      New plan entries can be added, existing plan entries can be listed and
+      deleted. Plan entries for a given target can be listed.
+    </para>
+  </refsect1>
+  <refsect1>
+    <title>Time inputs</title>
+    &localtime;
+  </refsect1>  
+  <refsect1 id="options">
+    <title>OPTIONS</title>
+
+    &optiongnu;
+
+    <variablelist>
+      <varlistentry>
+        <term><option>--add</option> <arg rep='repeat' choice='req'><replaceable class="parameter">target name or ID</replaceable> <replaceable class="parameter">start time</replaceable> <arg><replaceable class="parameter">end time</replaceable></arg></arg></term>
+        <listitem>
+          <para>
+	    Add new fixed schedule target. The end time is optional.
+	  </para>
+	  <para>  
+	    If <replaceable class="parameter">start time</replaceable> or
+	    <replaceable class="parameter">end time</replaceable> parameters
+	    are numbers preceeded wih <emphasis>+</emphasis> sign, they are
+	    interpreted as time offsets. Base time is time current system time
+	    for start time parameter, and start time value for end time. Please
+	    see <link linkend='examples'>examples</link> at the end of this
+	    document for details.
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--dump</option>
+          <arg choice='req'><option>-n</option> <replaceable class="parameter">YYYY-MM-DD</replaceable></arg>
+	</term>  
+	<listitem>
+	  <para>
+	    Dump plan entries. Unless night is specified with
+	    <option>-n</option> option, the current night plan entries are
+	    printed on standard output.
+	  </para>
+	</listitem>
+      </varlistentry>	    
+      <varlistentry>
+	<term><option>-n <replaceable class='parameter'>YYYY-MM-DD</replaceable></option></term>
+	<listitem>
+	  <para>
+	    Specify night for which targets will be dumped, copied or deleted.
+	  </para>
+	</listitem>  
+      </varlistentry>
+      <varlistentry>
+        <term><option>--load</option> <replaceable class='parameter'>filename</replaceable></term>
+	<listitem>
+	  <para>
+	    Load plan from file (or standard input, if "-" is specified as
+	    filename). Plan entries are separated by new line, and have the format described in
+	    <link linkend='planfile'>plan file format</link> section.
+	  </para>  
+	  <para>
+	    The command tests for validity of IDs entered in the entry file. It
+	    refuses to load plan which contains IDs not present in the system.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--copy</option>
+          <arg choice='req'><option>-n</option> <replaceable class="parameter">YYYY-MM-DD</replaceable></arg>
+	  <arg rep='repeat' choice='req'><replaceable class='parameter'>YYYY-MM-DD</replaceable></arg>
+	</term>
+	<listitem>
+	  <para>
+	     Copy plan from a single night to other night(s). The plan entries
+	     from plan for night specified with <option>-n</option> are copied
+	     to nights specified as arguments. The plan start and possibly (if
+	     filled) end dates are offseted with difference of sidereal time
+	     between the nights. This quarantees that the objects will be
+	     observed at the same horizontal position. If you wish to observe
+	     objects at the same time, please use <option>--fixed-copy</option>.
+	  </para>  
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--fixed-copy</option>
+          <arg choice='req'><option>-n</option> <replaceable class="parameter">YYYY-MM-DD</replaceable></arg>
+	  <arg rep='repeat' choice='req'><replaceable class='parameter'>YYYY-MM-DD</replaceable></arg>
+	</term>
+	<listitem>
+	  <para>
+	     Similar to <option>--copy</option>, but keeps times unchanged. So
+	     if there is target scheduled at 22:00, and you copy it a month
+	     ahead, it will still remain scheduled at 22:00 (assuming time
+	     reference is not affected by daylight saving time change).
+	  </para>  
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--target</option> <arg rep='repeat' choice='req'><replaceable class='parameter'>target name or id</replaceable></arg></term>
+	<listitem>
+	  <para>
+	    Print plan entries for given target(s).
+	  </para>  
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+         <term><option>--delete</option>
+           <arg><option>-n</option> <replaceable class="parameter">YYYY-MM-DD</replaceable></arg>
+	   <arg rep='repeat'><replaceable class='parameter'>plan id</replaceable></arg>
+	 </term>
+	 <listitem>
+	   <para>
+	     Delete plan entry with given plan IDs., or being observed at given night.
+	   </para>
+	 </listitem>  
+      </varlistentry>
+      &dbapplist;	
+    </variablelist>  
+  </refsect1>
+  <refsect1>
+    <title id='planfile'>Plan file format</title>
+    <para>
+      This section describe format of the plan file, which can be used with
+      <option>--load</option> to load a plan from file.
+    </para>
+    <variablelist>
+      <varlistentry>
+        <term>target id</term>
+	<listitem>
+	  <para>target ID, e.g. numerical value. Names are not supported.</para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>start time</term>
+	<listitem>
+	  <para>plan entry start Time in RTS2 time format.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>end time</term>
+	<listitem>
+	  <para>
+	    optional plan entry end time. Observation without end time are
+	    observed only once, e.g. the script is not repeated.
+	  </para>  
+        </listitem>
+      </varlistentry>
+    </variablelist>
+    <para>
+      There is an example of the input file.
+      <programlisting>
+1001	2011-01-17T00:00:00	2011-1-17T00:10
+1002	2011-01-17U00:20:00
+1003	2011-01-17L00:40:00	2011-1-17T2
+      </programlisting>
+      This introduce to the system three plan entries, all for 17th
+      January 2011. Start times use mixed local and UT times - please see
+      <citerefentry><refentrytitle>rts2</refentrytitle><manvolnum>7</manvolnum></citerefentry>
+      for details.
+    </para>
+  </refsect1>  
+  <refsect1 xml:id='examples'>
+    <title>Examples</title>
+
+    <para>
+      Following example add new plan entry for target with name M31, to be
+      executed on 2013-03-13, at 12:34:41 UT. The target will be valid for 5
+      minutes (300 seconds).
+    </para>
+
+    <screen>
+      <command>&dhpackage;</command> <option>--add</option> <replaceable>M31</replaceable> <replaceable>2013-03-13T12:34:41</replaceable> <replaceable>+300</replaceable>
+    </screen>
+
+    <para>
+      Following examples schedules target with name M81 to be executed in one
+      hour (=3600 seconds) from now, and running until it is above horizon (as
+      end time is not specified):
+    </para>
+
+    <screen>
+      <command>&dhpackage;</command> <option>--add</option> <replaceable>M81</replaceable> <replaceable>+3600</replaceable>
+    </screen>  
+
+    <para>
+      To print plan for the current night, execute following:
+    </para>
+
+    <screen>
+      <command>&dhpackage;</command> <option>--dump</option>
+    </screen>
+
+    <para>
+      To load plan entries from standard input (e.g. from file named filename.plan):
+    </para>
+
+    <screen>
+      <command>cat</command> <replaceable>filename.plan</replaceable> | <command>&dhpackage;</command> <option>--load</option> <replaceable>-</replaceable>
+    </screen> 
+
+    <para>
+      To print plan for night 2013-03-13, execute:
+    </para>
+
+    <screen>
+      <command>&dhpackage;</command> <option>--dump</option> <option>-n</option> <replaceable>2013-03-13</replaceable>
+    </screen>
+
+    <para>
+      To print all plan entries for target with name M81:
+    </para>
+    
+    <screen>
+      <command>&dhpackage;</command> <option>--target</option> <replaceable>M81</replaceable>
+    </screen>
+
+    <para>
+      To copy targets from night 2013-03-13 to nights of 2013-04-15 and 2013-04-16, use the following command:
+    </para>
+    
+    <screen>
+      <command>&dhpackage;</command> <option>-n</option> <replaceable>2013-03-13</replaceable> <option>--copy</option> <replaceable>2013-04-15</replaceable> <replaceable>2013-04-16</replaceable>
+    </screen>  
+
+     
+  </refsect1>  
+  <refsect1>
+    <title>SEE ALSO</title>
+
+    <para>
+      <citerefentry>
+        <refentrytitle>rts2</refentrytitle>
+	<manvolnum>7</manvolnum>
+      </citerefentry>
+    </para>
+
+  </refsect1>
+</refentry>

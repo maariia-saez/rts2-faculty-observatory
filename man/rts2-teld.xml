@@ -1,0 +1,279 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" [
+
+  <!ENTITY dhfirstname "<firstname>Petr</firstname>">
+  <!ENTITY dhsurname   "<surname>Kubanek</surname>">
+  <!ENTITY dhdate      "<date>2015-08-31</date>">
+  <!ENTITY dhsection   "<manvolnum>7</manvolnum>">
+  <!ENTITY dhemail     "<email>petr@kubanek.net</email>">
+  <!ENTITY dhusername  "Petr Kubanek">
+  <!ENTITY dhpackage   "rts2-teld">
+
+  <!ENTITY % rts2 SYSTEM "rts2.ent">
+  %rts2;
+]>
+
+<refentry>
+  <refentryinfo>
+    <title>&dhpackage;</title>
+    <productname>rts2</productname>
+    <productnumber>&rts2version;</productnumber>
+    &dhdate;
+    <authorgroup>
+      <author>
+        &dhfirstname;
+        &dhsurname;
+	<contrib>Wrote most of the RTS2 package.</contrib>
+	<address>
+          &dhemail;
+	</address>
+      </author>
+    </authorgroup>
+    <copyright>
+      <year>2009</year>
+      <holder>&dhusername;</holder>
+      <year>2015</year>
+      <holder>&dhusername;</holder>
+    </copyright>
+    &legal;
+  </refentryinfo>
+  <refmeta>
+    <refentrytitle>&dhpackage;</refentrytitle>
+    &dhsection;
+  </refmeta>
+  <refnamediv>
+    <refname>&dhpackage;</refname>
+    <refpurpose>Generic manual page for telescope (mount) drivers.</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>&dhpackage;</command>
+      &deviceapp;
+      <arg choice="opt">
+	<arg choice="plain"><option>--park-position <replaceable>alt</replaceable>:<replaceable>az</replaceable>:<replaceable>flip</replaceable></option></arg>
+	<arg choice="plain"><option>--rts2-model <replaceable>RTS2 model filename</replaceable></option></arg>
+	<arg choice="plain"><option>--t-point-model <replaceable>RTS2 model filename</replaceable></option></arg>
+      </arg>
+    </cmdsynopsis>
+
+  </refsynopsisdiv>
+
+  <refsect1 id="description">
+    <title>DESCRIPTION</title>
+
+    <para>
+       This manual page describes focuser drivers available for RTS2, and
+       common options for mount (telescope) drivers. For description of options common to
+       all devices, please consult
+       <citerefentry><refentrytitle>rts2-device</refentrytitle><manvolnum>7</manvolnum></citerefentry>.
+     </para>
+  </refsect1>
+  <refsect1 id="options">
+    <title>OPTIONS</title>
+
+    &optiongnu;
+
+    <variablelist>
+      &deviceapplist;
+      <varlistentry>
+        <term><option>--park-position</option></term>
+        <listitem>
+          <para>
+	    Specify telescope parking position. At least altitude and azimuth must be provided.
+	  </para>
+	  <para>
+	    If flip is provided, the telescope will flip to the given flip.
+            Please see discussion below for possible flip values.
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--rts2-model</option></term>
+        <listitem>
+          <para>
+            RTS2 pointing model. Pointing model correct for errors in telescope pointing, allowing more precise pointing to predefined targets.
+            Please see
+            <citerefentry><refentrytitle>rts2-telescope-model</refentrytitle><manvolnum>7</manvolnum></citerefentry>
+            for details.
+	  </para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+  <refsect1>
+    <title>Comman commands</title>
+    <para>
+      Every telescope driver has basic commands, which can be executed either through 
+      <citerefentry><refentrytitle>rts2-mon</refentrytitle><manvolnum>7</manvolnum></citerefentry> or 
+      through <citerefentry><refentrytitle>rts2-httpd</refentrytitle><manvolnum>7</manvolnum></citerefentry> JSON
+      interface.
+    </para>
+    <variablelist>
+      <varlistentry>
+        <term>move</term>
+        <para>
+          Move telescope to equatorial (RA and DEC) coordinates. Target values are specified as 
+          parameters to move command. RA and DEC can be specified in any format understand by RTS2
+	  - either as floats in degrees (RA 0..360, DEC -90..90), or in
+	    hours,minutes and seconds (for RA) or degrees, minutes and seconds
+          (for DEC). Following two examples explain the format of RA DEC:
+        </para>
+        <para>
+          <emphasis>move</emphasis> 187.50 +20.50
+        </para>
+        <para>
+          <emphasis>move</emphasis> 12:30 +20:30
+        </para>
+      </varlistentry>
+      <varlistentry>
+        <term>move_tle</term>
+        <para>
+	  Start tracking a satellite with given Two Line Element ephemerides.
+	  Two lines epemerides are given as two string, enclosed in "". See
+          example below for an old Cosmos 1966 Rk ephemerides:
+        </para>
+        <para>
+          <emphasis>move_tle</emphasis> "1 19448U 88076D&nbsp;&nbsp;&nbsp;02255.52918163 -.00000002&nbsp;&nbsp;00000-0&nbsp;&nbsp;10000-3 0&nbsp;&nbsp;4873" "2 19448&nbsp;&nbsp;65.7943 338.1906 7142558 193.4853 125.7046&nbsp;&nbsp;2.04085818104610"
+        </para>
+        <para>
+          Those are the two line elements:
+        </para>
+        <para>
+          1 19448U 88076D&nbsp;&nbsp;&nbsp;02255.52918163 -.00000002&nbsp;&nbsp;00000-0&nbsp;&nbsp;10000-3 0&nbsp;&nbsp;4873
+        </para>
+        <para>
+          2 19448&nbsp;&nbsp;65.7943 338.1906 7142558 193.4853 125.7046&nbsp;&nbsp;2.04085818104610
+        </para>
+        <para>
+          <bold>Please keep in mind that TLE format is space sensitive, e.g. when copying above to rts2-mon, make sure proper amount of spaces is included.</bold>
+        </para>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+  <refsect1>
+    <title>Common variables</title>
+    <para>
+      Mount interface provides common variables, visible in
+      <citerefentry><refentrytitle>rts2-mon</refentrytitle><manvolnum>1</manvolnum></citerefentry> and <citerefentry><refentrytitle>rts2-xmlrpcclient</refentrytitle><manvolnum>1</manvolnum></citerefentry>.
+      They govern focuser behaviour and show its state. They are described
+      below. 
+    </para>
+
+   <variablelist>
+      <varlistentry>
+        <term>OFFS</term>
+	<para>
+	  Offsets applied to ORI coordinates.
+	</para>
+      </varlistentry>
+      <varlistentry>
+        <term>GOFFS</term>
+	<para>
+	  Guiding offsets. Has similar effects as OFFS, but are intended
+	  primarly for storing guiding data.
+	</para>
+      </varlistentry>
+      <varlistentry>
+        <term>FLIPPING</term>
+	<para>
+	  This variable specifies flipping strategy used by the mount. Flip is
+	  common problem on German Equatorial Mount (GEM), where a certain
+	  object (RA DEC position on sky) can be observed on two different DEC
+          and RA axis coordinates. Possible values are:
+	</para>
+        <variablelist>
+          <varlistentry>
+            <term>shortest</term>
+            <para>
+	      If both flip are possible, the shortest will select one which will  
+	      travel lower distance at any axes. Specifically, the algorithm
+	      calculates maximum of differences between current and target
+              position in DEC and RA, and select flip which leads to lower value.
+            </para>
+            <para>
+	      This is the default value, as it leads to the best use of night
+              time.
+            </para>
+          </varlistentry>
+          <varlistentry>
+            <term>same</term>
+            <para>
+	      If possible, flip stays same as is the current flip. This setting is
+	      indended for cases when the observations for callibration
+              purposes should be as long as possible on the same flip.
+            </para>
+          </varlistentry>
+          <varlistentry>
+            <term>opposite</term>
+            <para>
+	      Opposite to the same setting, this forces every possible movement
+              to flip. Usefull mostly for telescope long slew sles.
+            </para>
+          </varlistentry>
+          <varlistentry>
+            <term>west</term>
+            <para>
+	      Flip mount to west side. The definition is arbitrary and depends
+	      on mount parameters, particurarly zero offsets. BUt in most
+	      cases, west flip means the telescope is west from meridian,
+              counterweight on east.
+            </para>
+          </varlistentry>
+          <varlistentry>
+            <term>east</term>
+            <para>
+	      Similar to west flip, prefers flip on east side.
+            </para>
+          </varlistentry>
+          <varlistentry>
+            <term>longest</term>
+            <para>
+	      Opposite to shortest. Does not provides any benefits, but can be
+	      used to test mount performance.
+            </para>
+          </varlistentry>
+          <varlistentry>
+            <term>cw down</term>
+            <para>
+	      Counter weight down position. Prefers to place mount such as
+              counterweight will be positioned down, and telescope axis up.
+            </para>
+          </varlistentry>
+          <varlistentry>
+            <term>cw up</term>
+            <para>
+              Counter weight up position. Prefers to place mount such as
+              counterweight will be positioned down, and telescope axis up.
+            </para>
+          </varlistentry>
+        </variablelist>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+  <refsect1>
+    <title>Telescope drivers</title>
+    <para>
+      <citerefentry>
+        <refentrytitle>rts2-teld-sitech-gem</refentrytitle>
+	<manvolnum>1</manvolnum>
+      </citerefentry>
+      Sidereal Technology GEM (German Equatorial Mount) driver.
+    </para>
+  </refsect1>
+  <refsect1>
+    <title>SEE ALSO</title>
+
+    <para>
+      <citerefentry>
+        <refentrytitle>rts2</refentrytitle>
+	<manvolnum>7</manvolnum>
+      </citerefentry>,
+      <citerefentry>
+        <refentrytitle>rts2-device</refentrytitle>
+	<manvolnum>7</manvolnum>
+      </citerefentry>
+    </para>
+
+  </refsect1>
+</refentry>

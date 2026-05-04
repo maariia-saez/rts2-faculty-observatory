@@ -1,0 +1,219 @@
+RTS 2 - how to start it
+=======================
+
+OK, so you read INSTALL, go through all the steps, and have nice
+rts2-xxxx binaries sitting in your /usr/local/bin and waiting to be executed.
+
+First some hints:
+
+- don't panic!
+- if something does not work, write to petr@kubanek.net. If he does not
+  respond, chances are that the mail ended in SPAM filter and was never read.
+  You will find contact details (including phone, skype,..) on
+  http://petr.kubanek.net, so try to contact him using a more interactive
+  communication.
+
+Creating and populating /etc/rts2 directory
+===========================================
+
+First of all, you need to create and populate /etc/rts2 directory. This
+directory holds RTS2 configuration files. At beginning. As root. issue
+following commands:
+
+root@host:$ cd rts2
+root@host:rts2$ ./rts2-init
+
+Now you need to edit /etc/rts2/rts2.ini and provide values for your
+installation (they are marked with xxxx, so just search for that and replace
+its occurences).
+
+We will come to pupulating /etc/rts2 with other files needed for devices etc.
+later.
+
+Creating database
+=================
+
+You can skip this part if you want RTS2 without database. But if you run
+astronomical observatory, you will not be able to do any reasonable work
+without it. So:
+
+- create/add user to allowed database users. On Debian, after you install postgresql-server:
+
+root@host:$ su postgres             # you must be root. Do sudo bash on Ubuntu and similar systems.
+root@host:$ createuser <username>   # where you replace username with your username
+
+Grant rights to create db and superuser (when asked, press y). Please consult
+Postgresql manual for details. Or write me.
+
+For Ubuntu 16.04 you must execute the following commands:
+
+user@host:$ sudo -i -u postgres		# login to 'postgres' user
+postgres@host:$ createuser --interactive user	# change 'user' with your Ubuntu user name.
+Shall the new role be a superuser? (y/n) y
+postgres@host:$ exit # Returns to Ubuntu user.
+
+- setup RTS2 database. Usually it is called stars, but you are free to create
+  your own. Just choose other name.
+
+user@host:$ createdb stars  # you must be user which have granted database access
+user@host:$ cd rts2/src/sql
+user@host:$ ./rts2-builddb stars
+
+If you want planets and Landolt fields, answer the questions with y. If you
+want to run RTS2 with dummy devices as configured in conf/devices file, run:
+
+user@host:$ cd rts2/src/sql/data
+user@host:$ psql stars < dummy.sql
+
+Try the database with:
+
+user@host:$ rts2-targetinfo 1
+
+1 is dark frame target. It shoudl print something like:
+    1 d         nan         nan +00:00 nan          nan         nan transiting Dark frames
+       C0:'D 0'
+        |-- expected light time: 0 # images 1
+        \-- expected duration: 0
+     Expected maximal script duration: 0
+
+If it does not print that out, there is something wrong. Please investigate it,
+try to fix it, or write me.
+
+Creating targets of your choice
+===============================
+
+Probably the best way how to create a target is using rts2-newtarget. There is
+a sample session:
+
+user@host:$ rts2-newtarget 
+Default values are written at []..
+Target name, RA&DEC or anything else []: M31
+Target name, RA&DEC or anything else: M31
+2008-05-15T12:49:14.698 app 2 Cannot find value 'epoch_id' in section 'observatory'.
+2008-05-15T12:49:14.699 app 1 Cannot find section 'newtarget'.
+Simbad response for 'M31': 
+***************************
+# M31	#Q31223
+#=Simbad: 1
+#(Q30426)x1
+%C LINER
+%J  10.6846250 +41.2692778 (6) = 00 42 44.31   +41 16 09.4  
+%J.E [10800.00 10800.00  90] D 1999ApJS..125..409C
+%V z -.001004 D [ .000023] 2002LEDA..........P
+%T Sb
+%I.0 2C 56
+
+etc..
+
+#---ServerTime(ms): 36
+
+
+***************************
+Unknow %V
+Unknow %T
+  s .. Save
+  q .. Quit
+  o .. List observations around position
+  t .. List targets around position
+Your selection:s
+Target ID [ new id ]: 
+Target ID: -2147483648
+Target NAME [2C 56]: M31
+Target NAME: M31
+ID                  1000
+SEL_ID              1000
+NAME                M31
+TYPE                79
+RA                  00:42:44.310
+DEC                 +041 16 09.40
+
+ALTITUDE            +055 08 08.98
+ZENITH DISTANCE     +034 51 51.02
+AZIMUTH             +094 50 52.13
+HOUR ANGLE          03:17:05.286
+
+(You press enter when asked for ID, but enter name, as you don't like 2C 56 the
+system is offering from SIMBAD).
+
+After creating your targets, run:
+
+usrr@host: rts2-seltest
+ID                  20
+SEL_ID              20
+NAME                MAblank1
+TYPE                102
+RA                  01:00:00.000
+DEC                 +000 07 00.00
+
+Please consult man rts2-target for details how to edit the target (most
+probably you will like to enable it and raise its priority -
+rts2-target -e -p 200 <tar_id> will do that). See man rts2-targetinfo for
+details how to print target informations (including way how to produce nice
+graphs depicting target height etc..).
+
+Running and testing RTS2
+========================
+
+So you want to start the beast up? You will need to (as root user):
+
+root@host:rts2$ cp rts2.initd /etc/init.d/rts2
+
+Before you will run to:
+
+root@host:rts2$ cp conf/services conf/devices conf/centrald conf/sd /etc/rts2
+
+and editing /etc/rts2/devices (please see man rts2.devices for details what to
+enter), so you will be able to do start RTS2 with:
+
+root@host:rts2$ /etc/init.d/rts2 start
+
+you might be interested in starting the thing manually. Do:
+
+root@host: rts2-centrald -i
+
+if it exits, you have a problem. If not, on other x-term window/terminal/console, do:
+
+user@host: rts2-mon
+
+It should show rts2-mon screen. Suppose you have LX200 connected to /dev/ttyS1, do:
+
+root@host: rts2-teld-lx200 -f /dev/ttyS1 -i
+
+If that does not exists with an error message, you should then see LX200 as T0
+device in rts2-mon (run it in other x-term/..). The try to:
+
+press key down to get to T0
+the display on right changes to display telescope informations
+write:
+park
+and press enter
+
+Telescope shall move to parking position
+
+write:
+move 180 0
+and press enter
+
+If that coordinate is above horizon, telescope should move there. Please change
+coordinates (RA DEC) according to your location, the best is to try some object
+which is circumpolar (DEC > 90 - latitude for northern hemisphere, DEC < -90 -
+latitude on southern hemisphere).
+
+First in move command is RA (in degrees, <0,360> range), second is DEC (in
+degrees, <-90,+90> range).
+
+Now move to camera, Following is demonstration with dummy, please change dummy
+string on following line to name of your camera driver.
+
+root@host:$ rts2-camd-dummy -i
+
+If you have FLI camera, you will run:
+
+root@host:$ rts2-camd-fli -i
+
+Then run from second Xterminal window:
+
+root@host:$ rts2-xfocusc -d C0 -e 2
+
+to get some images. If you reach till that point, running services shall be
+quite easy for you.

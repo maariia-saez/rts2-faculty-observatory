@@ -1,0 +1,1146 @@
+2016-06-10
+ * cat for catalogue query services
+
+2015-11-29
+ * G(PL)-Point telescope pointing modelling
+ * rts2-model options for GPoint
+ * TLE and MPEC targets executed with proper commands passed to telescope
+
+2015-08-04
+ * integrated Project Pluto (http://www.projectpluto.com/sat_code.html) code for TLE
+
+2014-07-26
+ * renamed XMLRPCD to HTTPD
+
+2014-07-21
+ * extensive update of teld and all related classes and drivers, fixing behaviour and correctness
+ * separating telescope physical and sky coordinates, enabling TP model to be computed correctly in all cases
+ * interconnected with significat update of several mount drivers (gemini, d50)
+ * rts2-tpm was also repaired and improved to reflect current changes and actual needs
+ * IMPORTANT NOTICE: the value (sign) of elementary mount-specific haZero/decZero parameters has been changed for most cases. The code in SVN reflects this change, but please take care of it in case you use non-default values. We stress the need of undertaking local tests, as fatal telescope collision may follow as consequence of incorrect setup.
+
+2014-07-11
+ * added option to print expansion from obtained image FITS header to rts2-nightreport
+
+2014-06-24
+ * queue_nrep, queue_at_nrep selector commands and their documentation
+
+2014-06-06
+ * I command (take image, leave shutter as it is)
+
+2014-04-27
+ * -s option for rts2-json, rts2-bb-json script
+
+2014-04-24
+ * Added support for binning (tested on iXon 1K x 1K emccd) - Shashikiran Ganesh <shashi@prl.res.in>
+
+2014-04-16
+ * rep_n and rep_separation are saved to the database
+
+2014-04-15
+ * addParkPosOption, createParkPos Telescope class methods
+
+2014-04-10
+ * rep_n and rep_separation queue entries parameters
+
+2014-03-12
+ * added skip command
+
+2014-03-06
+ * flat_beginning, flat_ending and friends
+ * set deamon values from command line
+
+2014-01-02
+ * MI Filter wheel driver
+
+2013-12-28
+ * queue's check target length field
+
+0.9.5
+=====
+
+2013-12-1
+ * Added SI3097 support
+
+2013-07-26
+ * Added normalizeRaDec function to utilsfunc - normalizing RaDec with |dec| > 90
+
+2013-07-13
+ * Added support for Automated Weather Station by mlab
+
+2013-06-18
+ * Added support for Planewave Instruments' Hedrick Focuser
+
+2013-06-06
+ * fixed nstep focuser
+
+2013-05-28
+ * Java JSON bindings (in java directory)
+
+2013-05-04
+ * PROTO_STATUS_PROGRESS message (transmits both state change and expected duration)
+
+2013-04-29
+ * user variable permissions
+
+2013-04-24
+ * user permissions
+
+2013-03-29
+ * moved XMLRPC++ headers to include directory
+
+2013-03-26
+ * moved target and observation request to JSON library
+
+2013-03-21
+ * migrated JSON DB API to jsondb
+
+2013-03-04
+ * rts2_status_t for device status
+
+2013-02-28
+ * initDB with connection name parameter, allowning multiple connection for multi-thread applications
+
+2013-02-26
+ * added bb_observatory_id to plan table
+
+2013-02-25
+ * introduced messages types - currently only for observation slew/start/end/interruptions
+
+2013-02-23
+ * HARD_OFF/SOFT_OFF states becomes part of ONOFF_MASK, not direct status
+
+2013-02-14
+ * added support for GCUSB-nStep focuser
+
+2013-01-13
+ * fixed various bugs in simulator
+
+2013-01-20
+ * test_restart command for XMLRPCd
+ * queues_targets table
+
+2013-01-17
+ * moved notify connection from target to MasterConstraints
+
+2013-01-15
+ * queue window parameter
+
+2013-01-03
+ * switched_standby centrald value
+
+2012-12-28
+ * JSONRequest class
+
+2012-12-27
+ * hide/show milliseconds in time differences
+
+2012-12-20
+ * replacing wrong characters in FITS header
+
+2012-11-29
+ * timeseries (trending)
+
+2012-11-28
+ * moved model and telescope drivers to rts2tel library
+
+2012-11-24
+ * tar_telescope_mode
+ * clients visible in rts2-mon
+
+2012-11-19
+ * ThorLabs FW102c driver updates, ConnThorLabs
+
+2012-11-14
+ * insert command for selector/queues
+ * image mode calculation
+
+2012-11-13
+ * block until visible queue option
+ * target_constraints_with_name
+
+2012-11-09
+ * camera serial and type are writable and autosaved
+ * moved GPIB to connection (from sensord)
+
+2012-11-09
+ * support for HISTORY and COMMENTS fields
+
+2012-10-26
+ * bb server with mapping and observations calls
+
+2012-10-22
+ * Changed telescope driver to display "model" DEC (-180..180 range)
+
+2012-10-16
+ * images are by default created only in memory, written to disk when saving them
+
+2012-09-10
+ * added BB (Big Brother)
+ * moved config.h from include into ../, create prefixed version with AX_PREFIX_CONFIG_H
+
+2012-09-09
+ * night_next command, allows darks in queue
+
+2012-09-03
+ * publish-subscribe support * for all values
+
+2012-08-28
+ * rts2-nightreport prints last night data
+
+2012-08-26
+ * changed DETSIZE to rectangle value, properly write rectangles (defines getDisplayValue)
+
+2012-07-31
+ * add values debug flag
+
+2012-07-29
+ * -o flag for rts2-scriptexec, report scriptexec progress
+ * filter_id (integer) used as index instead of filter name
+
+2012-07-09
+ * global replace of rts2_nan with NAN
+
+0.9.4
+=====
+
+2012-06-20
+ * mset API
+
+2012-06-19
+ * observatory/sexadecimals configuration option
+
+2012-06-09
+ * template files for XML-RPC images
+ * moved Obs. Vermes specific code to subdirectories
+
+2012-06-06
+ * code with XML/JSON exception - properly reply to wrong password
+
+0.9.3-1
+=====
+
+2012-05-22
+ * OBJECT camera value
+
+2012-05-21
+ * WCS auxiliary values
+
+2012-05-11
+ * isExposing returns -2 on exposure ends
+ * removed camWaitExposure
+
+2012-05-09
+ * improves multiple channel WCS headers writing
+
+2012-05-08
+ * channel coordinates
+
+2012-05-07
+ * scheduler library
+ * moved cupola to library file
+ * MaxDome II (Sirius dome) sceleton
+
+2012-05-04
+ * Python libraries - scriptcomm.py, flats.py
+
+2012-04-24
+ * time on sky statistics
+
+0.9.2-1
+=====
+
+2012-04-18
+ * functional multiple channels readout, getDataBuffer function
+
+0.9.1-1
+=====
+
+2012-04-17
+ * exposure_overwrite command to overwrite created files
+ * PROTO_BINARY_KILLED, functional shared memory readout
+
+2012-04-10
+ * rts2-state supports -e option
+
+2012-04-06
+ * expand_wfn with expand path
+
+2012-04-03
+ * errorReported in Element, error propagation through script
+
+2012-03-31
+ * rts2-user can edit login files, not only database
+
+2012-03-26
+ * support for multi channel devices
+
+2012-03-25
+ * rts2-mon can send command(s) with --command option
+ * use crypt for DB passwords
+
+2012-03-24
+ * replace /\ etc. in expanded variables with _, fix path problems with targets containting / in name
+
+2012-03-09
+ * removed FWHM extimates, HAM (should be handled by external scripts)
+ * removed XPLATE, YPLATE (transation to WCS only metadata
+
+2012-03-07
+ * removed guding, HAM and star acquistions (should be replaced by I/O scripting)
+ * MPEC name resolving
+
+2012-03-02
+ * login files for non-DB XML-RPCDs.
+
+2012-02-11
+ * finished new guide.py
+ * S, waitidle script commands
+ * --without-on-power for Zelio domes
+
+2012-02-02
+ * center calculations
+
+2012-02-01
+ * finalised include directory structure
+ * added killall_wse command (without script end)
+ * s in suffix for autosave values
+
+2012-01-29
+ * log system startup errors
+ * added rts2script element to .rts2 templates
+
+2012-01-18
+ * SBIG filter support (E. Kundra)
+
+2012-01-14
+ * progresses
+ * migrates objects to rts2core namespace
+
+2012-01-13
+ * --valuefile option
+ * run_device in scripts
+ * array values (double_array, double_array_add) from script code
+
+2012-01-08
+ * added records_integer value
+
+2012-01-07
+ * rts2-grbd's --create-disabled option
+
+2012-01-06
+ * added proper motion
+
+2012-01-05
+ * EVENT_WRITE_IMAGE_ONLY
+ * write_headers executor command
+
+2011-12-29
+ * Rts2Conn->Connection,Rts2Command->Command,..
+
+2011-12-26
+ * expansion in templates
+
+2011-12-22
+ * version in manual pages is taken from autoconf
+
+2011-12-16
+ * multiple filter wheel support
+
+2011-12-15
+ * added runscript call
+ * cleaned rts2script library (moved more classes to rts2script namespace)
+
+2011-12-10
+ * created rts2script library in lib directory (moved from src/plan)
+
+2011-11-26
+ * telescope_speed, filter_movement and readout_time configutation options
+
+2011-11-25
+ * added daemon's --autorestart parameter
+
+2011-11-04
+ * close_for command for dome
+
+2011-10-28
+ * print expected number of images of a script
+
+2011-10-27
+ * RTS2_DT_DEG_DIST_180 flag
+
+2011-10-26
+ * default channel in events file
+
+2011-10-25
+ * added corrwerr command (for image processing scripts)
+
+2011-10-06
+ * telescope model parameters visible in telescope device
+
+2011-10-03
+ * elementPosition and supporting operations
+
+2011-09-26
+ * bool, onoff values
+
+2011-09-25
+ * switchCooling, coolingOnOff in camd
+
+2011-09-23
+ * raiseHWError, clearHWError
+
+2011-09-22
+ * initHardware method
+
+2011-09-10
+ * moved to .so libraries
+
+2011-09-08
+ * change_constraints API
+
+2011-09-04
+ * Moved libs to lib directory
+ * Startup and Shutdown states
+
+2011-08-14
+ * DEVICE_NEED_RELOAD state
+
+2011-07-30
+ * cnst_alt and cnst_alt_v API calls
+
+2011-07-28
+ * Added --noauth device option
+
+2011-07-17
+ * Rotator device type, Pyxis Optec rotator driver
+
+2011-07-06
+ * Added support for AstroHaven Enterprises domes 
+
+2011-07-06
+ * Added Tbalance BigNG Fan/Temp control module
+
+2011-07-02
+ * Added notvisible option for GRBd (to control recording of targets never visible from observatory location)
+
+2011-07-01
+ * API for selecting targets by labels
+
+2011-06-30
+ * first release of simulator capability
+
+2011-06-16
+ * getSatisfiedIntervals method
+
+2011-05-20
+ * Meade LX200 driver split from generic LX200
+
+2011-05-18
+ * inotify for constraints
+
+2011-05-17
+ * getNextParamDoubleTime (for timeoffsets specified with +)
+
+2011-02-08
+ * added loopcount command to script stdin/out
+ * single script command
+
+2011-02-01
+ * finished and documented (man page) rts2-queue
+ * removed rts2-clearq (replaced with --clear option to rts2-queue)
+
+2011-01-31
+ * move all Rts2Values to rts2core, removed Rts2 prefix
+
+2011-01-30
+ * added --run-as option to run under different user
+
+2011-01-24
+ * changed man pages format - add rts2.ent file with entities for common options etc..
+
+2011-01-14
+ * QueuedTarget class
+
+2011-01-11
+ * set api (HTTP-based)
+
+2011-01-10
+ * added Time arrays
+
+2011-01-03
+ * .rts2 page expansion
+ * HIGHEST, WESTEAST queue types
+
+2010-12-26
+ * added parameters for focusing weak images (e.g. from Ondrejov 65cm)
+
+2010-12-15
+ * added reset-constraints option to rts2-target
+
+2010-12-14
+ * maxRepeat constraint
+ * added comments to indicate failed Auger cuts
+
+2010-12-11
+ * added rnight query for ready night master state
+
+2010-12-07
+ * fixed redhat and slackware init files
+ * fixed ARC support, confirms it is working
+
+2010-11-28
+ * added ExecutorQueue for queues inside executor
+
+2010-11-27
+ * change default sorting of devices in rts2-mon
+
+2010-11-22
+ * stop move state
+
+2010-11-11
+ * rts2-user can delete users
+
+2010-11-08
+ * autofocusing scripts
+
+2010-11-07
+ * scripting for image processing script
+
+2010-10-27
+ * added "VT" (Value Type) function to stdin/stdout scripting
+2010-10-26
+ * added "move" function to stdin/stdout scripting
+ * added ThorLaser driver
+
+2010-10-11
+ * compute expected script duration
+ * allow specifiing tempdisable in days, hours or weeks
+
+2010-10-08
+ * added messages mailing/commands/..
+
+2010-09-29
+ * added id-only and name-only to rts2-targetinfo and rts2-target
+
+2010-09-25
+ * added capability to delete targets
+
+2010-09-24
+ * add PI and program name (as labels)
+
+2010-09-21
+ * allow users to specify minimal length for expression format
+
+2010-09-11
+ * moved Target to rts2db namespace, and some associated namespace changes
+
+2010-09-09
+ * tempdisable editing options
+ * name resolving
+
+2010-08-18
+ * constraints support (.xsd and .xml for constraint files..)
+
+2010-08-04
+ * boolean array support
+
+2010-07-15
+ * support for multiple extension images (on client side)
+
+2010-07-11
+ * BOP_WAIT_TRIG, BOP_WILL_EXPOSE and related machinery
+
+2010-06-12
+ * Camera filter focusing offsets
+
+2010-05-06
+ * Change in B (BOP) message (central server comm) - adds server state
+
+2010-03-21
+ * Big Brother support (configuration entry in events.xsd, support in xmlrpcd)
+
+2010-03-20
+ * Various other FLI improvements. You will need to use FLI library from RTS2 repository.
+ * FLI uses reported serial numbers
+ * Modified flat strategy
+
+2010-03-19
+ * entry page with list of requests available on the server
+
+2010-03-16
+ * added javascript date selection
+ * removed wcs directory
+
+0.8.0-1
+=====
+
+2010-03-15
+ * 0.8.0-1 released
+ * various fixes to compilation process
+ * fix to calibration target
+
+0.8.0
+=====
+
+2010-03-07
+ * 0.8.0 released
+
+2010-02-25
+ * added lib directory
+ * camera experimetal shared memory transport
+
+2010-02-20
+ * Replaced SOAP library with own simple Simbad support
+
+2010-02-17
+ * HTTP client support, -u option for rts2-xmlrclient
+
+2010-02-16
+ * added centraldN_ variables to commands excuted from XMLRPCD
+
+2010-02-06
+ * Support for MI CCD devices
+ * Added exposure_end notification to script being executed
+
+2010-01-31
+ * Flats are set with now - mitigate waiting for script ends
+
+2010-01-30
+ * Time diff is editable in rts2-mon with selection box (for selecting for how long in future should new time be)
+
+2010-01-18
+ * MPEC target field for telescope - telescope is able to calculate solar system bodies orbits
+
+2009-12-05
+ * add W for writeable values, edit only writable values
+
+0.7.5
+=====
+
+2009-11-29
+ * added gbm_enabled_above_error grbd parameter
+
+2009-11-07
+ * Added ROOT config check, rts2-fit-focus
+
+2009-11-06
+ * Support for Astronomical Research Cameras (Leech controllers)
+
+2009-11-03
+ * TRIAX monochromator support
+
+2009-11-01
+ * Check script before it is added to database
+ * Plot date ticks on graphs
+
+2009-10-24
+ * Added Markus script for focusing - rts2-autofocus
+
+2009-10-22
+ * added night statistic in imgproc - night_good,..
+ * added last good image to imgproc
+
+2009-09-22
+ * simplified the heating algorith of aag cloud/rain sensor
+ * updated the man page
+
+2009-09-13
+ * do {} while loops
+ * preview paging
+
+2009-09-12
+ * added gbm_record_above_error and gbm_error_limit parameters to rts2.ini configuration file
+ * fixed error in Rts2CameraDevClient - properly call readoutEnd
+ * added while_idle and while scripting elements
+
+2009-09-11
+ * removed scripting M (mirror) and F (filter) commands, as they are replaced with value changes
+
+2009-09-05
+ * Added after_exposure_cmd, after_exposure_cmd_timoout and after_exposure_cmd_arg parameters
+
+2009-08-10
+ * XML-RPC server supports access to the images
+ * XML-RPC supports correct authorization
+
+2009-07-25
+ * use wasChanged to detect changes inside daemon, to not send values which are the same
+ * number of improvements inside XML-RPCD
+
+2009-05-24
+ * Added astrometry_devices to imgproc section from rts2.ini
+
+2009-05-22
+ * Changed way how MPC ephemerides are stored in database and handled
+
+2009-05-17
+ * MPC data are stored in tar_info
+
+2009-05-08
+ * queue executor - it is now able to accept queue command to queue next targets
+ * startResync function for telescope, change in how abberation etc. are reported
+
+2009-05-06
+ * getMinFlatHeigh, min_flat_heigh
+ * improvements of rts2-simbadinfo, added manual page
+
+2009-05-04
+ * added possibility to select minimal airmass distance for calibration observation selection
+
+2009-05-03
+ * changed Camera::readoutOneLine to doReadout
+ * variables names are case insensitive (even in scripts)
+ * queue command for executor (executor enables queing of targets)
+
+2009-05-02
+ * added %N, %Y, %D , %O and %a expansions
+ * changed focuser driver - added offsets for different values
+
+2009-04-19
+ * removed flip from rts2.ini, as it is now stored directly in camera
+
+2009-04-18
+ * fixed architecture issues (use ntohs, htons,..)
+
+2009-04-17
+ * migrating lot of sources to namespaces for better documentation
+ * creating librts2teld, librts2camd, librts2focusd etc..
+
+2009-04-14
+ * preliminary support for EPICS
+
+2009-01-06
+ * [2452561] added airmass,..
+
+2008-12-28
+ * [1913503] fixed problems with INDI
+
+2008-12-14
+ * [2315461] record environment values
+
+2008-11-22
+ * [2074047] fixed
+
+2008-10-15
+ * [2170371] fixed
+
+2008-10-03
+ * [1911238] added newport lamp driver
+
+2008-10-01
+ * [1742446] partial readout of the chip
+
+2008-09-23
+ * commited new dome modules
+ * added rts2-mood, devices for weather,..
+
+2008-09-02
+ * [2089418] added
+ * some scheduling works
+
+2008-08-27
+ * [2078147] fixed
+
+2008-08-13
+ * [2048653] fixed
+
+2008-08-09
+ * -e option for rts2-scriptexec
+
+2008-08-02
+ * [2029682] path are configurable
+
+2008-08-01
+ * xfocusc with zooming, nine option, ..
+
+2008-07-20
+ * [1929674] fixed
+ * [1958123] fixed
+
+2008-07-19
+ * [2022355] fixed
+
+2008-07-02
+ * [2008885] Added SuperAGILE support.
+
+2008-06-13
+ * added miniccd interlaced driver
+ * fixed and split IR driver (dome and telescope)
+ * add AltAz value type (for ALT AZ offsets)
+
+2008-06-05
+ * [1953718] fixed in dome
+
+2008-06-04
+ * [1953718] fixed in teld
+ * [1968365] fixed for Bootes 2, not for Bootes IR
+ * [1984306] see rts2.script - T0.OFFS+=(10,2) is now possiblea
+
+2008-05-12
+ * [1959375] fixed (again)
+
+2008-05-11
+ * [1910493] fixed
+ * [1953718] more fixs
+
+2008-05-10
+ * [1961114] added symlinkImage method, -l option to rts2-image
+
+2008-05-07
+ * [1959546] fixed problem with arrays in grb_gcn
+ * [1959375] fixed SET_VARSIZE
+
+2008-05-06
+ * Driver for NMT (by Astelco)
+ * [1958842] fixed
+
+2008-04-30
+ * [1953706] changed
+ * [1953747] created from morning_off and morning_standby variables
+ * [1949417] fixed
+ * [1948623] fixed
+
+2008-04-25
+ * [1951557] fixed
+
+2008-04-22
+ * Kolonica telescope basic driver
+
+2008-04-21
+ * PIXY lightening detector
+
+2008-04-20
+ * logger improvements
+
+2008-04-15
+ * [1940524] fix added, need to check it during night
+
+2008-04-14
+ * [1942083] fixed
+
+2008-04-10
+ * [1939260] fixed
+
+2008-04-09
+ * rts2-user finished
+ * fix in rts2app.cpp (exit and eof handling)
+
+2008-04-06
+ * added rts2-user command (user management)
+ * created Rts2User and Rts2UserSet classes
+
+2008-04-05
+ * Pure number formating flag works with TimeDiff
+ * -N option for rts2-nightreport, rts2-target, rts2-targetlist and rts2-targetinfo
+
+2008-04-04
+ * [1913505] replaced camCoolTemp with setCoolTemp, removed cooltemp commad
+ * [1933822] fixed
+
+2008-04-03
+ * [1932118] changed to new driver
+ * [1929677] fixed
+
+2008-04-02
+ * [1932118] Changed IFW to use Rts2ConnSerial
+
+2008-04-01
+ * Fixed issues with modelling (J2000 vs. current epochs)
+ * cloud sensor
+ * Bootes 1 dome rewrite
+
+2008-03-13
+ * telma database
+
+2008-03-12
+ * Andor extensions
+
+2008-03-11
+ * corrections
+
+2008-03-10
+ * Use database username and password [# 1911021]
+ * grb_isnew flag [# 1909513 ]
+ * rts2-scriptexec [# 1911060 ]
+
+2008-03-08
+ * Migrated to Subversion
+
+2008-03-06
+ * cloud sensor
+ * finish Rts2ConnSerial
+
+2008-03-05
+ * fix corrections flows
+
+2008-02-28
+ * RTS2_DT_HEX
+
+2008-02-20
+ * send raw commands
+
+2008-02-12
+ * commited new, simplified teld
+
+2008-02-11
+ * remove grantPriority hook, as it is not needed
+
+2008-02-09
+ * added cmdConn, fixed bug with unconnected/unknow devices
+
+2008-02-05
+ * added RADEC value
+
+2008-01-30
+ * fixed executor
+ * queClear/clearAll issues
+
+2008-01-24
+ * Cygwin fixes
+ * AXIS fixes
+
+2008-01-19
+ * Rts2Script::setTarget
+ * comments from script are saved to FITS header
+
+2008-01-13
+ * isEqual for values
+ * removed CAM_DATA state
+
+2008-01-11
+ * Percentage class
+
+2008-01-10
+ * nightreport improvements
+
+2007-12-07
+ * ROTANG, MNT_ROTA, CCD_ROTA
+
+2007-12-06
+ * edtSoa, sbigusb and urvc2 drivers
+
+2007-12-04
+ * new FLI, Apogee, Alta and SBIG CCD driver
+
+2007-12-03
+ * Andor driver works (without frame transefer)
+
+2007-11-09
+ * d50 driver almost finished
+ * Rts2DevGEM
+
+2007-11-04
+ * binary connection support
+
+2007-11-01
+ * new camera driver API, without CameraChip
+
+2007-10-31
+ * Rts2ValueRectangle
+
+2007-10-24
+ * added xmlrpc access
+
+0.7.1
+====
+ * new blocking operations API
+ * futher customatization, more configuration
+
+2007-10-23
+ * TPM change to properly support GEM
+ * DAB and DAF modelling terms
+
+2007-10-18
+ * D50 mount driver
+
+2007-10-16
+ * blocking API device_status command
+
+2007-09-10
+ * Values moved from Rts2DevClient to Rts2Conn
+ * significant changes in Rts2Conn infrastructure, more work on BOP
+   client-side mechanism
+ * fixed problem with rts2-xfocusc - made it single thread (with help of
+   ConnectionNumber, which returns X11 socket descriptor).
+
+2007-09-03
+ * BOP (blocking operations) core implemented
+
+2007-09-01
+ * Paramount driver park when not homed (MOTOR_HOMED is not set)
+
+2007-07-19
+ * Rts2SWaitFor and Rts2SSleep
+
+2007-07-16
+ * Stat value
+ * Rts2ConfigRaw
+ * monitor with edit functionality
+
+0.7.0
+===
+ * cleaning of options (capital | lower case,..)
+   - copula->cupola cleanup
+ * added soapd, augershooter,..
+ * manual pages
+ * create events table
+ * mesaging
+ * clean of init, deamonize, .. (centrald have log file..)
+ * custom values
+ * filter table & better filter support
+
+0.6.3
+===
+ * observation processing support
+   - obs_process script
+
+0.6.2
+==
+ * (fill in)
+
+0.6.1
+==
+ * (fill in)
+
+0.6.0
+==
+ * (fill in)
+
+0.5.2
+===
+ * guiding support
+   - guiding section in config, minchange and badchange parameters
+ * rts2-lastnightreport script changed to rts2-nightreport, and accept
+   some parameters (see rts2-nightreport --help to give you some idea;
+   and experince with them on production system)
+ * rts2-targetinfo accept some more parameters.
+ * it's now possible to send emails to interested users on those events:
+   - start of observation (start of imaginign, e.g. after telescope
+     slew)
+   - end of observation (after last image taken)
+   - first image with astrometry
+   - when all images from observation group are processed
+   - at the end of night observations
+ * Users can be assigned either to observations, or to group of
+   observations - e.g. you can get those emails for observation 1033 and
+   for all GRBs (even new one, which will be generated from GRB). It's 
+   configurable on user level.
+ * FLI support
+
+0.5.1
+===
+ * small changes in DB
+ * focusing
+
+0.5.0
+===
+ * rts2block.cpp, rts2device.cpp - new communication library
+ * rewrite all drivers to new library
+ * more c++, particulary in planner (src/plan)
+ * SBIG USB support, SBIG LPT over urvc2
+ * OpenTLC (BOOTES-IR) support
+ * conditionals Makefile.am's, --with-xxx etc. configure.in
+
+0.4.0
+===
+ * database change - float8 instead of float4 for ra/dec in targets table
+ * planner - scripting, threading
+ * per-device scripting
+ * introduced C++ code, depends on stdlibc++
+ * fotometer support
+
+0.3.6
+===
+ * optec focuser and focusing support
+
+0.3.5
+===
+ * hyberbolic orbit
+ * libnova 0.10
+
+0.3.4
+===
+ * bug-fixes
+ * new planc structure (thread exposure)
+ * miniccd (starlight) driver
+ * optec photometer package
+ * losmandy Gemini driver
+
+0.3.1
+===
+ * configuration file
+   o for central server & devices
+ * BOOTES cleanup
+ * paramount drive (not public available)
+ * planc, grbc cleaning
+ * bacofwd, bacoclient (more cleaning needed)
+ 
+0.3.0
+===
+ * planner 
+ * telescope 
+    o position corections
+ * use of GNU autoconf, automake
+ * grbc
+ * planc
+ * maintance - added more than needed .cvsignore files and more
+
+0.2.2
+===
+ * devcli
+   o recognise status messages
+ * scheduler
+   o scheduling camera cooling
+   o scheduling astronomical events - sunset, sunrise, moonset,
+     moonrise, ..
+ * apogee camera driver - beta level
+ * telescope layered architecture
+ * monitor 
+
+0.2.1
+===
+ * central server
+   o provides IP and PORT of devices
+ * devcli
+   o support device listing
+ * camd
+   o paraller readout & data sending
+   o layer architecture (camera.h and like)
+ * getopt configuration
+
+0.2
+===
+ * client library
+    o messages, responses and data handling
+    o design
+ * central server
+    o IPC with select
+    o design
+ * authentification
+    o abstract param.h layer
+    o change of all files to that new layer
+ * deferred priority handling
+    o blockstart, blockcheck, blockend commands
+    o priority_deferred command
+    o priority timeout
+ * DEVDEM_WITH_CLIENT removed
+    o devdem.[hc], devser.[hc] could live without it
+
+0.1.1
+===
+ * priority handling
+    o messages in serverd
+    o receiving in devdem
+    o priority blocks
+    o thread canceling
+ * DEVDEM_WITH_CLIENT macro
+    o changes in devdem.[hc] to include such macro
+    o devser, devdem splitting
+
+0.1
+===
+ * basic functionality
+    o device deamons
+    o planner - basic design
+    o documentation skeleton

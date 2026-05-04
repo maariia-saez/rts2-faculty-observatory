@@ -1,0 +1,459 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" [
+
+  <!ENTITY dhfirstname "<firstname>Petr</firstname>">
+  <!ENTITY dhsurname   "<surname>Kubanek</surname>">
+  <!ENTITY dhdate      "<date>2008-02-16</date>">
+  <!ENTITY dhsection   "<manvolnum>1</manvolnum>">
+  <!ENTITY dhemail     "<email>petr@kubanek.net</email>">
+  <!ENTITY dhusername  "Petr Kubanek">
+  <!ENTITY dhpackage   "rts2-grbd">
+
+  <!ENTITY % rts2 SYSTEM "rts2.ent">
+  %rts2;
+]>
+
+<refentry xmlns:xlink="http://www.w3.org/1999/xlink">
+  <refentryinfo>
+    <title>&dhpackage;</title>
+    <productname>rts2</productname>
+    <productnumber>&rts2version;</productnumber>
+    &dhdate;
+    <authorgroup>
+      <author>
+        &dhfirstname;
+        &dhsurname;
+	<contrib>Wrote most of the RTS2 package.</contrib>
+	<address>
+          &dhemail;
+	</address>
+      </author>
+    </authorgroup>
+    <copyright>
+      <year>2008</year>
+      <year>2014</year>
+      <holder>&dhusername;</holder>
+    </copyright>
+    &legal;
+  </refentryinfo>
+  <refmeta>
+    <refentrytitle>&dhpackage;</refentrytitle>
+    &dhsection;
+  </refmeta>
+  <refnamediv>
+    <refname>&dhpackage;</refname>
+    <refpurpose>Receives GCNs allerts, create their targets in the database and executes arbitary script upon their arrival.</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>&dhpackage;</command>
+      &dbapp;
+      <arg choice="opt"><option>-i</option></arg>
+      <arg choice="opt"><option>--local-port <replaceable>port number</replaceable></option></arg>
+      <arg choice="opt"><option>--localhost <replaceable>hostname</replaceable></option></arg>
+      <arg choice="opt"><option>--modefile <replaceable>filename</replaceable></option></arg>
+      <arg choice="opt"><option>-d <replaceable>device name</replaceable></option></arg>
+      <arg choice="opt"><option>--disable-grbs</option></arg>
+      <arg choice="opt"><option>--create-disabled</option></arg>
+      <arg choice="opt"><option>--gcn-host</option></arg>
+      <arg choice="opt"><option>--gcn-port</option></arg>
+      <arg choice="opt"><option>--do-hete-test</option></arg>
+      <arg choice="opt"><option>--forward <replaceable>port</replaceable></option></arg>
+      <arg choice="opt"><option>--add-exec <replaceable>command</replaceable></option></arg>
+      <arg choice="opt"><option>--exec-followups</option></arg>
+      <arg choice="opt"><option>--queue-to <replaceable>queue name</replaceable></option></arg>
+    </cmdsynopsis>
+
+  </refsynopsisdiv>
+
+  <refsect1 id="description">
+    <title>DESCRIPTION</title>
+
+    <para>
+      <command>&dhpackage;</command> receives informations from GCN. Enables executing of a command
+      when new GCN message arrive. It can also retransmit GCN packets to behind-firewall hosts.
+    </para>
+
+  </refsect1>
+  <refsect1>
+    <title>Theory of operation</title>
+    <para>
+      Gamma ray burst Coordinate Network (GCN) is a NASA developed
+      infrastructur for transmissing information about Gamma-Ray Bursts (GRBs)
+      occuring in the distant universe. After detected on the satellite, the
+      GRB coordinates are transmitted through Internet by the GCN service.
+    </para>
+    <para>
+      The &dhpackage; has the following tasks:
+    </para>
+    <variablelist>
+      <varlistentry>
+        <para>manage connection to GCN</para>
+      </varlistentry>
+      <varlistentry>
+        <para>once the new GCN event is received, parses the data and pushes them through processing</para>
+      </varlistentry>
+      <varlistentry>
+        <para>create or update GRB entry in the RTS2 target database</para>
+      </varlistentry>
+      <varlistentry>
+	<para>if
+	<citerefentry><refentrytitle>rts2-executor</refentrytitle><manvolnum>7</manvolnum></citerefentry>
+	is running, passes GRB ID to it, with <emphasis>grb</emphasis> command.</para>
+      </varlistentry>
+      <varlistentry>
+        <para>if the <emphasis>--add-exec</emphasis> parameter was specified, executes the given script with arguments describing the GRB target.</para>
+      </varlistentry>
+      <varlistentry>
+        <para>if the <emphasis>--queue-to</emphasis> parameter was specified, adds the GRB to the given <citerefentry><refentrytitle>rts2-selector</refentrytitle><manvolnum>7</manvolnum></citerefentry> queue.</para>
+      </varlistentry>
+    </variablelist>
+    <para>
+      Various satellites can feed GCN with the GRB data. GRBs occurs at a rate
+      about one per day in the Universe, but due to non-uniform coverage, only
+      about one third are detected. It is reasonable to expect one GRB per
+      week, and about one GRB per month which will be visible during night from
+      your observing site.
+    </para>
+    <para>
+      &dhpackage; creates targets in the RTS2 database before sending them to
+      the
+      <citerefentry><refentrytitle>rts2-executor</refentrytitle><manvolnum>7</manvolnum></citerefentry>.
+      Therefore, the database shall be operational when &dhpackage; is running.
+    </para>
+  </refsect1>
+  <refsect1>
+    <title>Troubleshooting</title>
+    <para>
+      If you cannot receive any GRB alerts, make sure the following is fullfilled:
+      <variablelist>
+        <varlistentry>
+          <para>
+	    Connection to GCN is setup and running. Bear in mind you need to
+	    contact NASA/GSFC to setup such connection, and also make sure the
+            connection made it through your observatory firewalls.
+          </para>
+        </varlistentry>
+        <varlistentry>
+          <para>
+            The <emphasis>last_packet</emphasis> is updated every 60 seconds. If it is not updated, GCN connection is not running. Check
+            firewall settings and NASA's GCN settings, available at <link xlink:href="http://gcn.gsfc.nasa.gov/sites_cfg.html">GCN</link>.
+          </para>
+        </varlistentry>
+        <varlistentry>
+          <para>
+            RTS2 database is correctly setup. Please see database logs if in doubts.
+          </para>
+        </varlistentry>
+      </variablelist>
+    </para>
+  </refsect1>
+  <refsect1 id="options">
+    <title>OPTIONS</title>
+
+    &optiongnu;
+
+    <variablelist>
+      &dbapplist;
+      <varlistentry>
+        <term><option>--disable-grbs</option></term>
+	<listitem>
+	  <para>
+	    Disable immediate automatic GRB reaction. GRB targets will not be
+	    executed via <emphasis>now</emphasis> mechanism. You probably would like to
+	    couple this option with <emphasis>--create-disabled</emphasis> to completly disable
+	    GRB reactions, or with <emphasis>--queue-to</emphasis> to queue GRBs to a queue to allow
+	    automatic delayed follow-up observations.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--create-disabled</option></term>
+	<listitem>
+	  <para>
+	    Create GRB targets disabled for selection by merit function. Adding
+	    this flag together with <emphasis>--disable-grbs</emphasis> will
+	    disable all automatic GCN GRBs reactions - targets will be recoreded to the database,
+	    but newer executed.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--queue-to <replaceable class="parameter">queue name</replaceable></option></term>
+        <listitem>
+          <para>
+	    Queue GRB target to queue. If
+	    <citerefentry><refentrytitle>rts2-executor</refentrytitle><manvolnum>7</manvolnum></citerefentry>
+	    is running, it will still be notified about GRB via its
+	    <emphasis>grb</emphasis> command. Then queue specified as argument
+	    will be notified through <emphasis>now</emphasis> command.
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--server <replaceable class="parameter">server-name[:port]</replaceable></option></term>
+        <listitem>
+          <para>
+	    Specify name of the host and possibly port, which runs
+	    <citerefentry><refentrytitle>rts2-centrald</refentrytitle><manvolnum>1</manvolnum></citerefentry>.
+	    This option is needed only for setups that use multiple computers.
+	    Its default is localhost for hostname and 617 for port number. If
+	    only hostname is provided, default port number - 617 - is used. 
+	    Default will work for simple setups.
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--do-hete-test</option></term>
+        <listitem>
+          <para>If set, GCN test routines will be processed, writen to database and executed.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--add-exec <replaceable class="parameter">command</replaceable></option></term>
+        <listitem>
+          <para>
+	    Specify command which will be executed once the GCN notice with GRB
+	    arrives. The command received as parameters following informations:
+	    <variablelist>
+	      <varlistentry>
+	        <term>target_id</term>
+		<listitem>
+		  <para>
+                    GRB target ID. That is RTS2 Target ID of the GRB being processed.
+		  </para>
+		</listitem>
+	      </varlistentry>
+	      <varlistentry>
+	        <term>grb_id</term>
+		<listitem>
+		  <para>
+		    GRB ID, assigned by GCN. Should be unique with some cautions. It is better base GRB processing on
+		    RTS2 target ID, as that is more unique - e.g. if Swift starts follow-ups of Integral GRB, grb id of that
+		    follow-up observations is different from Integral ID.
+		  </para>
+		</listitem>
+	      </varlistentry>
+	      <varlistentry>
+	        <term>grb_seqn</term>
+		<listitem>
+		  <para>
+		    GRB sequential number. Used in old BATSE days, nowadays almost always 0 or 1.
+		  </para>
+		</listitem>
+	      </varlistentry>
+	      <varlistentry>
+	        <term>grb_type</term>
+		<listitem>
+		  <para>
+		    GRB packet type. Please see
+		    <ulink url="http://gcn.gsfc.nasa.gov/sock_pkt_def_doc.html"><citetitle>GCN website</citetitle></ulink> for
+		    complete list of type ids.
+		  </para>
+		</listitem>
+	      </varlistentry>
+	      <varlistentry>
+	        <term>grb_ra</term>
+		<listitem>
+		  <para>
+		    GRB RA specified in decimal degrees (e.g. expect 0..360 range).
+		  </para>
+		</listitem>
+	      </varlistentry>
+	      <varlistentry>
+	        <term>grb_dec</term>
+		<listitem>
+		  <para>
+		    GRB DEC specified in decimal degrees (-90..90 range).
+		  </para>
+		</listitem>
+	      </varlistentry>
+	      <varlistentry>
+	        <term>grb_date</term>
+		<listitem>
+		  <para>
+                    GRB date as ctime (sec since 1-1-1970).
+		  </para>
+		</listitem>
+	      </varlistentry>
+	      <varlistentry>
+	        <term>grb_errorbox</term>
+		<listitem>
+		  <para>
+		    GRB errobox size in decimal degrees, usually expect some small number (way bellow 1 degree).
+		  </para>
+		</listitem>
+	      </varlistentry>
+	      <varlistentry>
+	        <term>grb_isnew</term>
+		<listitem>
+		  <para>
+		    1 if this is new GRB, 0 if this message is update of an already know GRB.
+		  </para>
+		</listitem>
+	      </varlistentry>
+	    </variablelist>
+	  </para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+  <refsect1>
+    <title>Variables</title>
+    <variablelist>
+      <varlistentry>
+        <term>enabled</term>
+	<listitem>
+	  <para>
+	    When set to true, &dhpackage; is allowed to send GRBs occuring
+	    during night time to executor. Those are send using
+	    <emphasis>grb</emphasis> command, 
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>create_disabled</term>
+	<listitem>
+	  <para>
+	    When set to true, GRB will be craeated as disabled targets. So the
+	    GRB targets will not be picked by
+	    <citerefentry><refentrytitle>rts2-selector</refentrytitle><manvolnum>7</manvolnum></citerefentry>.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>do_hete_tests</term>
+	<listitem>
+	  <para>
+	    When set to true, <emphasis>HETE</emphasis> test messages will be
+	    processed and threated as normal GRBs. Use with caution, as when enabled,
+	    plenty of new entries with test GRB will be created in target database.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>last_packet</term>
+	<listitem>
+	  <para>
+	    Receiving time of the last GCN packet. Values below 1 minute in
+	    past indicates the GCN connection is up and running, as GCN
+	    exchanges <emphasis>keep-alive</emphasis> packets every 60 seconds.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>last_target</term>
+	<listitem>
+	  <para>
+	    Name of the last target. This is the name created in the database,
+	    which combines GRB name and type (ID) of GCN message.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>last_target_id</term>
+	<listitem>
+	  <para>
+	    Id of the last target. This can be used to query target details in the database.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>last_target_time</term>
+	<listitem>
+	  <para>
+	    Time when the last GRB occured. Delta of this and the current clock
+	    time is the "age" of the GRB, that means how long ago the GRB was detected on the satellite.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>last_target_radec</term>
+	<listitem>
+	  <para>
+	    RA and declination of the last GRB.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>last_swift</term>
+	<listitem>
+	  <para>
+	    Time when the last <emphasis>Swift</emphasis> position information was received.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>last_swift_position</term>
+	<listitem>
+	  <para>
+	    RA and declination of the last <emphasis>Swift</emphasis> target.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>last_integral</term>
+	<listitem>
+	  <para>
+	    Time when the last <emphasis>INTEGRAL</emphasis> position information was received.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>last_integral_position</term>
+	<listitem>
+	  <para>
+	    RA and declination of the last <emphasis>INTEGRAL</emphasis> target.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>not_visible</term>
+	<listitem>
+	  <para>
+	    When true, create target entries even for currently not visible
+	    GRBs. This variable should be set to false, unless you really need
+	    to follow only the GRB which was visible when it was first reported
+	    by GCN.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>only_visible_tonight</term>
+	<listitem>
+	  <para>
+	    When true, only GRBs visible during 
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>min_grb_altitude</term>
+	<listitem>
+	  <para>
+	    If the current GRB altitude is greater then this value, it will be
+            send immediately to
+            <citerefentry><refentrytitle>rts2-executor</refentrytitle><manvolnum>7</manvolnum></citerefentry>
+            using the <emphasis>grb</emphasis> command. Otherwise, the GRB mights still be
+            queued, if the <emphasis>--queue-to</emphasis> option is provided.
+	  </para>
+	</listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+  <refsect1>
+    <title>SEE ALSO</title>
+
+    <para>
+      <citerefentry>
+        <refentrytitle>rts2</refentrytitle>
+	<manvolnum>7</manvolnum>
+      </citerefentry>,
+      <citerefentry>
+        <refentrytitle>rts2.ini</refentrytitle>
+	<manvolnum>5</manvolnum>
+      </citerefentry>
+    </para>
+
+  </refsect1>
+</refentry>

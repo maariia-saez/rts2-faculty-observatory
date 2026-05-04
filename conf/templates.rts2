@@ -1,0 +1,71 @@
+<html>
+<head>
+  <title>Template examples</title>
+  <rts2script script='setgetapi.js'/>
+  <rts2script script='targetedit.js'/>
+</head>
+
+<body onLoad='refreshData();'>
+
+<script type='text/javascript' language="javascript">
+function refreshData(){
+	getCallFunction("DOME","weather_open",function(v){
+	   document.getElementById("DOME_weather_open").value = v;
+	   if (v == 1) {
+		document.getElementById("DOME_on").checked = true;
+	   } else {
+		document.getElementById("DOME_off").checked = true;
+	   }
+	});
+
+	getCall("DOME","ignore_time",this.document.getElementById("DOME_ignore_time_raw"),true);
+	getCallTime("DOME","ignore_time",this.document.getElementById("DOME_ignore_time"),true);
+	getCall("DOME","moveCountTop",this.document.getElementById("DOME_moveCountTop"));
+
+	setTimeout('refreshData();',1000);
+}
+</script>
+
+<h1>Some template examples</h1>
+
+<table border="0" style="border-spacing: 40px 0px;">
+ <tr>
+  <td>weather_open</td>
+  <td>
+    <input name='v' value='off' id='DOME_weather_open'/>
+    <input type="radio" id="DOME_on" name="DOME_on_off" value="1" onClick='setGetCallFunction("DOME","weather_open",1,function(nv){document.getElementById("DOME_on").value=nv;alert("new value " + nv);});' />OPEN
+    <input type="radio" id="DOME_off" name="DOME_on_off" value="0" onClick='setGetCallFunction("DOME","weather_open",0,function(nv){document.getElementById("DOME_on").value=nv;alert("new value " + nv);});' />CLOSE
+  </td>
+ </tr>
+ <tr>
+  <td>ignore_time</td>
+  <td>
+    <input name='v' value='off' size='50' id='DOME_ignore_time_raw'/>
+    <input name='v' value='off' size='50' id='DOME_ignore_time'/>
+    <button onClick='setCall("DOME","ignore_time",document.getElementById("DOME_ignore_time").value);'>set</button>
+  </td>
+ </tr>
+ <tr>
+  <td>TEST_INT</td>
+  <td>
+    <input value='' id='SD_TEST_INT'/>
+    <button onClick='setGetCall("SD","TEST_INT",document.getElementById("SD_TEST_INT"));'>Set</button>
+  </td>
+ </tr>
+ <tr>
+   <td>Create target</td>
+   <td>
+     Name: <input value='' id='tn'/>
+     RA: <input value='' id='ra'/>
+     DEC: <input value='' id='dec'/>
+     Description: <input value='' id='desc'/>
+     <button onClick='createTarget(document.getElementById("tn").value,document.getElementById("ra").value,document.getElementById("dec").value,document.getElementById("desc").value,function(nid){ alert("created target with ID " + nid); });'>Create</button>
+   </td>
+ </tr>
+</table>
+
+<device>DOME</device>
+
+</body>
+</html>
+

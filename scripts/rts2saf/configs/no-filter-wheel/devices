@@ -1,0 +1,6 @@
+# RTS2 dummy devices configuration
+#
+#device	type	device_name	options
+#
+camd	dummy	C0	--focdev F0 --width 400 --height 500 
+focusd	dummy	F0  

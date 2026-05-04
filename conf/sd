@@ -1,0 +1,9 @@
+; this is modefile for dummy sensor from example configuration
+
+[500 kpix/sec]
+
+timer_count = 50
+
+[250 kpix/sec]
+
+timer_count = 60

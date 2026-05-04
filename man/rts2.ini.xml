@@ -1,0 +1,1203 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" [
+
+  <!ENTITY dhfirstname "<firstname>Petr</firstname>">
+  <!ENTITY dhsurname   "<surname>Kubanek</surname>">
+  <!ENTITY dhdate      "<date>2010-10-28</date>">
+  <!ENTITY dhsection   "<manvolnum>5</manvolnum>">
+  <!ENTITY dhemail     "<email>petr@kubanek.net</email>">
+  <!ENTITY dhusername  "Petr Kubanek">
+  <!ENTITY dhpackage   "rts2.ini">
+
+  <!ENTITY % rts2 SYSTEM "rts2.ent">
+  %rts2;
+]>
+
+<refentry>
+  <refentryinfo>
+    <title>&dhpackage;</title>
+    <productname>rts2</productname>
+    <productnumber>&rts2version;</productnumber>
+    &dhdate;
+    <authorgroup>
+      <author>
+        &dhfirstname;
+        &dhsurname;
+	<contrib>Wrote most of the RTS2 package.</contrib>
+	<address>
+          &dhemail;
+	</address>
+      </author>
+    </authorgroup>
+    <copyright>
+      <year>2006 - 2010</year>
+      <holder>&dhusername;</holder>
+    </copyright>
+    &legal;
+  </refentryinfo>
+  <refmeta>
+    <refentrytitle>&dhpackage;</refentrytitle>
+    &dhsection;
+  </refmeta>
+  <refnamediv>
+    <refname>&dhpackage;</refname>
+
+    <refpurpose>The configuration file for Remote Telescope System, 2nd version</refpurpose>
+  </refnamediv>
+  <refsect1>
+    <title>SYNOPSIS</title>
+
+    <para>
+      The rts2.ini file is a configuration file for the RTS2. rts2.ini
+      contains runtime configuration information for the RTS2 programs. The
+      complete description  of  the  file format and possible parameters held
+      within are here for reference purposes.
+    </para>
+
+  </refsect1>
+  <refsect1>
+    <title>FILE FORMAT</title>
+
+    <para>
+      The file consists of sections and parameters. A section begins with the
+      name of the section in square brackets and continues until the next
+      section begins.  Sections contain parameters of the form:
+    </para>
+
+    <para>
+      name = value
+    </para>
+
+    <para>
+      The file is line-based - that is, each newline-terminated line represents
+      either a comment, a section name or a parameter.
+    </para>
+
+    <para>
+      Section and parameter names are not case sensitive.
+    </para>
+
+    <para>
+      Only the first equals sign in a parameter is significant. Whitespace
+      before or after the first  equals  sign  is  discarded.  Leading,
+      trailing and internal whitespace in section and parameter names is
+      irrelevant. Leading and trailing whitespace in a parameter value is
+      discarded. Internal whitespace within a parameter value is retained
+      verbatim.
+    </para>
+
+    <para>
+      Any line beginning with a semicolon (``;'') or a hash (``#'') character
+      is ignored, as are lines containing only whitespace.
+    </para>
+
+    <para>
+      The values following the equals sign in parameters are all either a
+      string (no quotes needed) or a boolean,  which  may  be  given  as
+      yes/no,  0/1 or true/false.  Case is not significant in boolean values,
+      but is preserved in string values. Some items such as create modes are
+      numeric.
+    </para>
+  </refsect1>
+  <refsect1>
+    <title>IMAGE PATH EXPRESSION</title>
+    <para>
+      Please see
+      <citerefentry><refentrytitle>rts2</refentrytitle><manvolnum>7</manvolnum></citerefentry>
+      for on how image names are formed from expression.
+    </para>
+  </refsect1>
+  <refsect1>
+    <title>CONFIGURATION FILE SECTION</title>
+    <refsect2>
+      <title>database</title>
+      <para>Provides configuration values necessary to connect to database.</para>
+      <variablelist>
+	<varlistentry>
+	  <term>
+	    <option>name</option>
+	  </term>
+	  <listitem>
+	    <para>Database name. Database must be properly configured. Command psql [name] must work for root or user specified with
+	    username and password.</para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>username</option>
+	  </term>
+	  <listitem>
+	    <para>Database username. This user should have write access to important RTS2 tables (observations,..), otherwise
+	    RTS2 will not be able to record important values.</para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>password</option>
+	  </term>
+	  <listitem>
+	    <para>Database password. It is used with username to login to database specified by name.</para>
+	  </listitem>
+	</varlistentry>
+      </variablelist>
+    </refsect2>
+    <refsect2>
+      <title>observatory</title>
+      <para>Provide informations about observatory - its location etc.</para>
+      <variablelist>
+	<varlistentry>
+	  <term>
+	    <option>altitude</option>
+	  </term>
+	  <listitem>
+	    <para>Observatory altitute in meters. It is recorded to images.</para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>longitude</option>
+	  </term>
+	  <listitem>
+	    <para>Observatory longitude in degrees. Positive values are east from Greenwich, negative are west - e.g. American
+	    locations should have negative longitude, most of European positive.</para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>latitude</option>
+	  </term>
+	  <listitem>
+	    <para>Observatory latitude in degrees. Positive values are for northern hemisphere locations, negative for southern hemisphere
+	    - e.g. Republic of South Africa locations should have negative values, all Europe locations positive.</para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>ut_offset</option>
+	  </term>
+	  <listitem>
+	    <para>UT offset in hours (and fraction of hours). If not specified,
+	    default to longitude / 15.0. The offset is used for calculation of
+	    time dividing two consecutive nights. If current time is after 12 +
+	    UT offset, then the night is current local day. If current time is
+	    before 12 + UT offset, then the night is preceeding local day.</para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>min_alt</option>
+	  </term>
+	  <listitem>
+	    <para>Minimum altitude for an object to be selected. Entered in degrees.</para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>epoch_id</option>
+	  </term>
+	  <listitem>
+	    <para>Epoch id. Epochs are used to divide observatory data to packages which can be easily backed on tapes/DVDs.</para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>day_horizon</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Sun is below horizon, when its calculated altitude is bellow that value.
+              Default to 0 degrees.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>night_horizon</option>
+	  </term>
+          <listitem>
+	    <para>
+	      Night starts, when sun gets below that value
+              Default to -10 degrees.
+	    </para>
+          </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>horizon</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Horizon file. This file contains list of horizon
+	      hour angle and declination, both in degrees. Horizon is estimated
+	      by linear approximation between two sucessive points.
+	    </para>
+	    <para>
+	      Horizon points can be given in hour angle and declination
+	      (HA-DEC) or azimuth and altitude format (AZ-ALT). For details,
+	      please consult
+	      <citerefentry><refentrytitle>rts2-horizon</refentrytitle><manvolnum>1</manvolnum></citerefentry>
+	      man page.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>evening_time</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Evening time - time to cool cameras in seconds. State 1 (evening)
+	      starts evening_time seconds before sunset - start of state 2
+	      (dusk). Default to 7200 seconds (2 hours).
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>morning_time</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Morning time - time to cool off cameras and do calibrations in
+	      seconds. State 0 (day) starts morning_time seconds after sunrise,
+	      which marks transition from 4 (dawn) to 5 (morning). Default to
+	      7200 seconds (2 hours).
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>sexadecimals</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Governs writing of RA/DEC to FITS headers. If true, store those
+	      values as sexadecimal. Defaults to false.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>base_path</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      String for %b expansion. Expansions characters (%,..) in this string will be ignored. Default to "/images". 
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>que_path</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Images are stored on this path before they are processed. Default value is "%b/que/%c/%f".
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>acq_path</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Images are stored on this path for acqusition. Default value is "%b/acqusition/%t/%c/%f".
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>archive_path</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Good images are stored at this location. Those images form the processed image archive.
+	      Default value is "%b/archive/%t/%c/object/%f".
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>trash_path</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Bad images are stored at this location. Default value is "%b/trash/%t/%c/%f".
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>flat_path</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Flat images are stored at this location. Default value is "%b/flat/%c/raw/%f".
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>dark_path</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Bad images are stored at this location. Default value is "%b/darks/%c/%f".
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>target_path</option>
+	  </term>
+	  <listitem><para>
+	    Location of paths with per-target files. Default is PREFIX directory + 
+	    "/etc/rts2/targets". This path holds auxiliary target data -
+	    observing constraints, logs, and so on.
+	  </para></listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term><option>target_constraints_with_name</option></term>
+	  <listitem><para>
+	    If set to true, path to constraint file will be composed from
+	    target name. If false, path will include target id. The path is
+	    prefixed with value of <emphasis>target_path</emphasis>, and
+	    constraints are held in constraints.xml file. Please see output
+	    of
+	    <citerefentry><refentrytitle>rts2-targetinfo</refentrytitle><manvolnum>1</manvolnum></citerefentry> -ee for details.
+	    Defaults to false.
+	  </para></listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>nightdir</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Location of night logs; if -, then night logs will not be
+	      created. Default to PREFIX "/etc/rts2/nights/%N".
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>model_step_type</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Stepping type for model target. Default value is 2, which will
+	      take 2 steps on the net defined in model table. -1 is for linear
+	      model, where step is increased by factor of 1, and -2 is for
+	      completly random model, which will not make points on the net.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>flat_sun_min</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Flats will be taken when Sun altitude is above this number (e.g.
+	      put -7 there if you want to have flats in -7; -5 interval).
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>flat_sun_max</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Flats will be taken when Sun altitude is above this number (e.g.
+	      put -5 there if you want to have flats in -7; -5 interval).
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>telescope_speed</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Telescope speed (in degrees/seconds). Average telescope movement
+	      speed.  Should include overhead for ramp up/down times. Typically
+	      you will set this to 30-50 % of top telescope speed, depending on
+	      how long is the ramp and how much it spend on additional
+	      overheads. You can get estimate of average speed by running
+	      rts2-nightreport on some full nights - average telescope movement
+	      speed is printed with every observation in the output list.
+	      Default to 0.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>default_camera</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Deafult camera name. It is used by <citerefentry><refentrytitle>rts2-target</refentrytitle><manvolnum>1</manvolnum></citerefentry> 
+	      if camera name is not supplied.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term><option>logins</option></term>
+	  <listitem>
+	    <para>
+	      Login files for non-DB instances of RTS2. Please check carefuly
+	      how RTS2 was build, e.g. if with database support or without it.
+	      This value will have effect only if RTS2 was build without
+	      database.
+	    </para><para>  
+	      The file contains : separated login names and passwords. Default
+	      is RTS2_CONFDIR/etc/rts2/logins.
+	    </para>
+	  </listitem>  
+	</varlistentry>
+	<varlistentry>
+	  <term><option>header_replace</option></term>
+	  <listitem>
+	    <para>
+	      String used to replace occurence of the character at odd place
+	      with character at even place. For example specifiing "._Aa" will
+	      replace all "." with "_" and all "A" with "a". Defaults to empty string.
+	    </para>
+	  </listitem>
+	</varlistentry>
+      </variablelist>
+    </refsect2>
+    <refsect2>
+      <title>centrald</title>
+      <para>Centrald information, such as if system should be put to off state each morning, or if it should be "on" after reboot.</para>
+      <variablelist>
+        <varlistentry>
+	  <term>
+	    <option>logfile</option>
+	  </term>
+	  <listitem>
+	    <para>Logfile for centrald. Can be set to '-' to log to stderr.</para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>morning_off</option>
+	  </term>
+	  <listitem>
+	    <para>If set to true, centrald will switch it's state to OFF each morning.</para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>reboot_on</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      If set to true, centrald will switch it's state to ON
+	      after reboot. It's more wise to leave that value to
+	      false, as you will then switch the setup on once you
+	      will regain connection to the RTS2 computer.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>logfile</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      System logfile. Centrald logs there all system messages. You need to rotate
+	      logs, and after rotating them, call killall -1 rts2-centrald. Please see
+	      rts2.logrotate for an example how to achieve this with logrotated.
+	    </para>
+	  </listitem>
+        </varlistentry>
+      </variablelist>
+    </refsect2>
+    <refsect2>
+      <title>calibration</title>
+        <para>
+	  Provides infomations for calibration target - target 6 and Landold (or
+	  other) calibration selection.
+        </para>
+      <variablelist>
+	<varlistentry>
+	  <term>
+	    <option>airmass_distance</option>
+	  </term>
+	  <listitem>
+	    <para>
+		Maximal airmass distance for calibration targets. This value
+		set step size in airmass calibartion table. If set to 0.1,
+		airmass calibration table will have steps by 0.1, so targets on
+		airmass 1.3 and 1.4 will belong to diferent class and both will
+		be considered for observation in calibration target. If both
+		targets have airmass between 1.35 and 1.45, only one of them
+		will be considered for observation.Defaults to 0.1.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>lunar_dist</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Minimal lunar distance for calibration targets to be considered
+	      for selection. It's recorded in degrees, defaults to 20.
+            </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>valid_time</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Calibration valid time. If we take at given airmass range image
+	      within last valid_time seconds, observing this target is
+	      not a high priority.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>max_delay</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Calibration maximal time in seconds. After that time, calibration
+	      observation will receive max_bonus bonus. Between
+	      valid_time and max_delay, bonus is calculated as: {min_bonus} + (({time from
+	      last image}-{valid_time})/({max_delay}-{valid_time}))*({max_bonus}-{min_bonus}).
+	      Default to 7200.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>min_bonus</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Calibration minimal bonus. Calibration bonus will not be lower then this value. Default to 1.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>max_bonus</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Calibration maximal bonus. Calibration bonus will not be greater then this value. Default to 300.
+	    </para>
+	  </listitem>
+	</varlistentry>
+      </variablelist>
+    </refsect2>
+    <refsect2>
+      <title>grbd</title>
+      <para>Provides values for GRB daemon configuration and GRB observing informations.</para>
+      <variablelist>
+	<varlistentry>
+	  <term>
+	    <option>port</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Port which will be opened by GRBD either for listening (if server
+	      is filled with "-") or which will be contacted on server, if
+	      server is filled.  If you have allowed direct connection from the
+	      GCN machine (capella.gsfc.nasa.gov), you should put there port
+	      number negotiated with GCN. If you do not have direct connection
+	      and use some sort of the forwarding mechanism (ussing ssh tunnels
+	      or bacofwd), put there number to which port grbd should connect.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>server</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Location of GRB server. "-" when GRBD should open listening
+	      connection, or hostname (or IP address) of GRB relaying server.
+	      Please see port parameter for futher discussion.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>seplimit</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      If distance for GCN update of GRB position is bellow this value,
+	      it is assumed that GRB is still in FOV of the instrument and
+	      immediate slew will not be commanded. If distance of telescope is
+	      above seplimit, immediate telescope movement will be commanded.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>notvisible</option>
+	  </term>
+	  <listitem>
+	    <para>
+	       Whenever to record GRBs not visible from current location.
+	       Default to true, e.g. all GRBs will be recoreded. If set to
+	       false, only GRB with DEC > latitudea - 90 (for nothern
+	       hemisphere, e.g. latitude > 0) will be recorded to database.
+	    </para>
+	  </listitem>  
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>onlyvisibletonight</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Record only GRBs visible tonight from the observatory location.
+	      You can check for target visibility using -e and looking for IS
+	      VISIBLE TONIGHT. Default to false, e.g. GRBs will be recorded
+	      regardless of current visibility.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>add_exe</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Optional executable, which will be passed various parameters about GRB. On command line, this program will receive values (in following order) of
+	      tar_id grb_id grb_seqn grb_type grb_ra grb_dec grb_is_grb grb_date grb_errorbox and grb_isnew. Those values are:
+	      <variablelist>
+	        <varlistentry>
+		  <term>
+		    <option>tar_id</option>
+		  </term>
+		  <listitem>
+		    <para>
+		      Target ID taken from RTS2 database.
+		    </para>
+		  </listitem>
+		</varlistentry>
+	        <varlistentry>
+		  <term>
+		    <option>grb_id</option>
+		  </term>
+		  <listitem>
+		    <para>
+		      GCN GRB target id. Be aware, that different values are
+		      ussually assigned by GCN for observations of same GRB
+		      with different satellite.
+		    </para>
+		  </listitem>
+		</varlistentry>
+	        <varlistentry>
+		  <term>
+		    <option>grb_seqn</option>
+		  </term>
+		  <listitem>
+		    <para>
+		      Sequence number assigned from GCN. Please see GCN for details.
+		    </para>
+		  </listitem>
+		</varlistentry>
+	        <varlistentry>
+		  <term>
+		    <option>grb_type</option>
+		  </term>
+		  <listitem>
+		    <para>
+		      Type number of GCN packet. Please see GCN for details.
+		    </para>
+		  </listitem>
+		</varlistentry>
+	        <varlistentry>
+		  <term>
+		    <option>grb_ra</option>
+		  </term>
+		  <listitem>
+		    <para>
+		      J2000 RA of GRB location. In degrees (0-360 range).
+		    </para>
+		  </listitem>
+		</varlistentry>
+	        <varlistentry>
+		  <term>
+		    <option>grb_dec</option>
+		  </term>
+		  <listitem>
+		    <para>
+		      J2000 DEC of GRB location. In degrees (-90 to 90 range).
+		    </para>
+		  </listitem>
+		</varlistentry>
+	        <varlistentry>
+		  <term>
+		    <option>grb_errorbox</option>
+		  </term>
+		  <listitem>
+		    <para>
+		      GRB errorbox. In degrees.
+		    </para>
+		  </listitem>
+		</varlistentry>
+	        <varlistentry>
+		  <term>
+		    <option>grb_isnew</option>
+		  </term>
+		  <listitem>
+		    <para>
+		      1 if this is new GRB, 0 if this message is update of an already know GRB.
+		    </para>
+		  </listitem>
+		</varlistentry>
+	      </variablelist>
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>know_transients</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      True if GRB marked by GCN are labelled as non-GRB events, e.g.
+	      originating from know source variability, should be followed.
+	      Defaults to true. This option should be left true while system is
+	      in testing phase, as fake grb provide good tests of the system,
+	      but once it reach maturity, it is wise to switch know_transients to
+	      false.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>validity</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Time for which immediate GRB observing request will be valid.
+	      After that time, GRB will be disabled, and its autodisable field
+	      will be set to true. If zero, then GRB observing request will
+	      never expires, but will be observed governed by GRB merit
+	      function. Defaults to 86400 seconds = 1 day. If negative,
+	      automatic GRB disabling will not happen, but the event will still
+	      be observed with now command issues to executor (if the event is
+	      observable when trigger occured).
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>gbm_record_above_error</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Whenever FERMI GBM GRBs above error limit will be recorded. If
+	      error indicated in GBM message is above gbm_error_limit,
+	      depending on this setting, either GBM GRB will be completely
+	      ignored (if this is false), or recorded to the database with
+	      tar_enabled set to false - e.g. disabled. Default is true, record
+	      this value.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>gbm_enabled_above_error</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      If true, FERMI GRBs with error above gbm_error_limit will be
+	      recorded as enabled targets. This means that FERMI GRBs will be
+	      followed from selector. You most probably do not want this to
+	      happen. Default to false.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>gbm_error_limit</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      FERMI GBM GRBs, with error larger then this limit (specified in
+	      degrees), will not be followed. According to
+	      gbm_record_above_error setting, they will be either ignored at
+	      all, or only recorded to the database for reference. Default is
+	      15 arcmin = 0.25 of degree.
+	    </para>
+	  </listitem>
+	</varlistentry>
+      </variablelist>
+    </refsect2>
+    <refsect2>
+      <title>swiftfov</title>
+        <para>
+	  Provides parameters for Swift target - target 10.
+        </para>
+      <variablelist>
+	<varlistentry>
+	  <term>
+	    <option>min_horizon</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Minimal height above horizon for target to be considered.
+	      Defaults to 0. A Swift FOV with heigh lover then the min_horizon
+	      parameter will not be considered for observation.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>soft_horizon</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Targets with altitude bellow soft_horizon will be assigned
+	      altitude of soft_horizon. This is interesting for widefield
+	      systems, which would like to follow Swift which center is bellow
+	      horizon. Defaults to the "min_horizon" parameter.
+            </para>
+	  </listitem>
+	</varlistentry>
+      </variablelist>
+    </refsect2>
+    <refsect2>
+      <title>imgproc</title>
+      <para>Image processor configuration.</para>
+      <variablelist>
+	<varlistentry>
+	  <term>
+	    <option>astrometry</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Path for image processing script. Image processing script is
+	      called on every obtained image. The only parameter passed to the
+	      script is full path of the image.
+            </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>imageglob</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Glob pattern (e.g. * are allowed) for images. Those images are
+	      processed when system is in day or standby/off state.
+            </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>astrometry_timeout</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Timeout for astrometry processing. Astrometry script run time is
+	      limited to this number of seconds.
+            </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>obsprocess</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Observation processing script. Script is passed ID of observation
+	      which shall be processed. Script is run after all observation
+	      images were called through astrometry script.
+            </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>astrometry_devices</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      List of devices which astrometry results will be feeded back to telescope. Handy if you have multiple devices
+	      on a single mount, and would like to base astrometry only on a
+	      single device. Default to empty, which means use all devices for
+	      astrometry.
+            </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>last_processed_jpeg</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Path for last processed image, saved as JPEG. Path can contain %
+	      character for expansion. If not defined, the JPEG image will not
+	      be created.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>last_good_jpeg</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Path for last good (=with astrometry) image, saved as JPEG. Path
+	      can contain % character for expansion. If not defined, the JPEG
+	      image will not be created.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>last_trash_jpeg</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Path for last trash (=without astrometry) image, saved as JPEG.
+	      Path can contain % character for expansion. If not defined, the
+	      JPEG image will not be created.
+	    </para>
+	  </listitem>
+	</varlistentry>
+      </variablelist>
+    </refsect2>
+    <refsect2>
+      <title>selector</title>
+      <para>Configuration section for target selector.</para>
+      <variablelist>
+	<varlistentry>
+	  <term>
+	    <option>night_do_not_consider</option>
+	  </term>
+	  <listitem>
+	    <para>Space separated list of targets types which will not be considered
+      for observation during night. Usually you would like to put there flat
+      fields - f and F.</para>
+	  </listitem>
+	</varlistentry>
+      </variablelist>
+    </refsect2>
+    <refsect2>
+      <title>xmlrpcd</title>
+      <para>Section for XML-RPC daemon.</para>
+      <variablelist>
+        <varlistentry>
+          <term><option>page_prefix</option></term>
+	  <listitem>
+	    <para>
+	      Prefix for all pages generated by embedded HTTP server. This is
+	      usefull if the server is behind proxy, which maps requests from a
+	      given path. For example, if there is proxy server, which maps all
+	      requests to /allsky directory to your XML-RPCD HTTP server, set
+	      this option to /allsky. Then all generated links will start with
+	      /allsky, thus leading to correct adress behind proxy server.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term><option>auth_localhost</option></term>
+	  <listitem>
+	    <para>
+	      If authentification for access is required even from localhost.
+	      That apply to all HTTP calls - e.g. both API and Web pages
+	      access. If set to false, connection origination from localhost will
+	      not require authentification.
+	    </para>
+	    <para>
+	      It is reccomanded to leave this option at default, e.g. true. Programs which
+	      needs to access XMLRPC or JSON services can specify username and
+	      password in configuration file.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term><option>images_path</option></term>
+	  <listitem>
+	    <para>
+	      Path for images crated by xmlrpcd. Can contains expansion characters. Default to /tmp.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term><option>images_name</option></term>
+	  <listitem>
+	    <para>
+	      Default filename for images created with XMLRPCD. Deafult to xmlrpcd_%c.fits.
+	    </para>
+	  </listitem>
+	</varlistentry>
+      </variablelist>
+    </refsect2>
+    <refsect2>
+      <title>Device configuration</title>
+      <para>Device is configured in section which is named by its name. So if
+      you have camera called C0 in the system, you must put its configuration
+      values to [C0] section in rts2.ini.</para>
+      <variablelist>
+        <varlistentry>
+	  <term>
+	    <option>script</option>
+	  </term>
+	  <listitem>
+	    <para>Default script for device.</para>
+	  </listitem>
+	</varlistentry>
+        <varlistentry>
+	  <term>
+	    <option>blocked_by</option>
+	  </term>
+	  <listitem>
+	    <para>Devices which blocks this device. Default is empty - then all
+	    devices will block it.</para>
+	  </listitem>
+	</varlistentry>
+        <varlistentry>
+	  <term>
+	    <option>instrument</option>
+	  </term>
+	  <listitem>
+	    <para>FITS header entries. Instrument name.</para>
+	  </listitem>
+	</varlistentry>
+        <varlistentry>
+	  <term>
+	    <option>telescop</option>
+	  </term>
+	  <listitem>
+	    <para>Telescope name.</para>
+	  </listitem>
+	</varlistentry>
+        <varlistentry>
+	  <term>
+	    <option>origin</option>
+	  </term>
+	  <listitem>
+	    <para>Institution/observer.</para>
+	  </listitem>
+	</varlistentry>
+        <varlistentry>
+	  <term>
+	    <option>environment</option>
+	  </term>
+	  <listitem>
+	    <para>Space separated list of environmental variables names, which should be recorded to FITS header.</para>
+	  </listitem>
+	</varlistentry>
+        <varlistentry>
+	  <term>
+	    <option>env_VARIABLE_comment</option>
+	  </term>
+	  <listitem>
+	    <para>FITS header comment for the environmental variable with name VARIABLE. You can of course specify any name you like.</para>
+	  </listitem>
+	</varlistentry>
+        <varlistentry>
+	  <term>
+	    <option>after_exposure_cmd</option>
+	  </term>
+	  <listitem>
+	    <para>Command which will be executed by
+	    <citerefentry><refentrytitle>rts2-executor</refentrytitle><manvolnum>5</manvolnum></citerefentry>
+	    directly after exposure. It willl be passed two parameters - first
+	    absolute path to file produced, and second arbitary parameter
+	    specified with after_exposure_cmd_arg option.</para>
+	  </listitem>
+	</varlistentry>
+        <varlistentry>
+	  <term>
+	    <option>after_exposure_cmd_timeout</option>
+	  </term>
+	  <listitem>
+	    <para>Timeout for command running after exposure in seconds.</para>
+	  </listitem>
+	</varlistentry>
+        <varlistentry>
+	  <term>
+	    <option>after_exposure_cmd_arg</option>
+	  </term>
+	  <listitem>
+	    <para>Argument passed to command executed after readout is
+	    finished. Please note that first argument is always absolute image
+	    filename.</para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>readout_time</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Camera readout time (in seconds). If set, script length for the
+	      camera will include CCD readout time. Default to 0.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>filter_movement</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Filter moving time (in seconds). If set, script length for the
+	      camera will include time for moving the filter. In current
+	      implementation dump, cannot count filters to move and calculate
+	      filter movement time depending on how long filter wheel must move
+	      (e.g. how many filters are between target and current filter).
+	      Default to 0.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>template</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Template filename. Holds default template for device. Template
+	      is used to specify FITS cards which should be created, their value and comment.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>no-metadata</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Do not write automatic metadata with template. Default to true.
+	    </para>
+	  </listitem>
+	</varlistentry>
+      </variablelist>
+    </refsect2>
+  </refsect1>
+  <refsect1>
+    <title>SEE ALSO</title>
+
+    <para>
+      <citerefentry>
+        <refentrytitle>rts2</refentrytitle>
+	<manvolnum>7</manvolnum>
+      </citerefentry>,
+      <citerefentry>
+        <refentrytitle>rts2.script</refentrytitle>
+	<manvolnum>5</manvolnum>
+      </citerefentry>
+    </para>
+
+  </refsect1>
+</refentry>

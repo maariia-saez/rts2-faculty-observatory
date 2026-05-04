@@ -1,0 +1,46 @@
+This directory (and its subdirectories) contains all necessary SQL files and
+shell scripts used to create database to hold RTS2 data.
+
+Problems with older PostgreSQL versions (< 8.0??)
+
+PostgreSQL in version bellow 8.0 declares to_timestamp function only for integers.
+E.g.:
+
+stars=# \df to_timestamp
+                             List of functions
+     Result data type     |   Schema   |     Name     | Argument data types 
+--------------------------+------------+--------------+---------------------
+ timestamp with time zone | pg_catalog | to_timestamp | text, text
+ abstime                  | public     | to_timestamp | integer
+(2 rows)
+
+RTS2 needs sometimes variant with double precision. This can be created with:
+
+create or replace function to_timestamp (double precision) returns abstime as 'select to_timestamp (int4 ($1)) ' language 'SQL';
+
+Subdirectories:
+
+* auger - contains Auger shoot-the-shower specific tables
+
+* blanks - blank areas, used to populate FLAT targets.
+
+* create - contains script to create database. When you will run in on
+  live database, new script tables will be created, old preserved.
+ 
+* data - default data. Includes data for dummy devices.
+
+* drop - contains drop scripts. USE ON LIVE DATABASE (e.g. with data) ON YOUR
+  OWN RISK. Please note, that most probably you will drop database
+  with all data by running sql scripts in this subdirectory.
+
+* update - contains update scripts. Basicaly you should run scripts in
+  create, then scripts in update.
+
+* telma - extended login informations, user targets insertion. Used for storing
+  web requests for observations.
+
+Scripts:
+
+* rts2-builddb - build RTS2 database. Run scripts in create, then in
+  update. Populate tables using data in create init_date.sql. Will not
+  install to $PREFIX/bin.

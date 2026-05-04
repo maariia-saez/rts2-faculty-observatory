@@ -1,0 +1,430 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd" [
+
+  <!ENTITY dhfirstname "<firstname>Petr</firstname>">
+  <!ENTITY dhsurname   "<surname>Kubanek</surname>">
+  <!ENTITY dhdate      "<date>2012-01-06</date>">
+  <!ENTITY dhsection   "<manvolnum>1</manvolnum>">
+  <!ENTITY dhemail     "<email>petr@kubanek.net</email>">
+  <!ENTITY dhusername  "Petr Kubanek">
+  <!ENTITY dhpackage   "rts2-target">
+
+  <!ENTITY % rts2 SYSTEM "rts2.ent">
+  %rts2;
+]>
+
+<refentry>
+  <refentryinfo>
+    <title>&dhpackage;</title>
+    <productname>rts2</productname>
+    <productnumber>&rts2version;</productnumber>
+    &dhdate;
+    <authorgroup>
+      <author>
+        &dhfirstname;
+        &dhsurname;
+	<contrib>Wrote this manual page.</contrib>
+	<address>
+          &dhemail;
+	</address>
+      </author>
+    </authorgroup>
+    <copyright>
+      <year>2007-2010</year>
+      <holder>&dhusername;</holder>
+    </copyright>
+    <copyright>
+      <year>2011,2012</year>
+      <holder>&fzu;</holder>
+    </copyright>
+    &legal;
+  </refentryinfo>
+  <refmeta>
+    <refentrytitle>&dhpackage;</refentrytitle>
+    &dhsection;
+  </refmeta>
+  <refnamediv>
+    <refname>&dhpackage;</refname>
+    <refpurpose>Manage target entry.</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>rts2-target</command>
+      &dbapp;
+      <arg choice="opt">
+        <arg choice="plain"><option>-e</option></arg>
+      </arg>
+      <arg choice="opt">
+        <arg choice="plain"><option>-d</option></arg>
+      </arg>
+      <arg choice="opt">
+        <arg choice="plain"><option>-p <replaceable>priority</replaceable></option></arg>
+      </arg>
+      <arg choice="opt">
+        <arg choice="plain"><option>-b <replaceable>bonus</replaceable></option></arg>
+      </arg>
+      <arg choice="opt">
+        <arg choice="plain"><option>-t <replaceable class="parameter">YYYY-MM-DD[UT]HH:MM:SS</replaceable></option></arg>
+      </arg>
+      <arg choice="opt">
+        <arg choice="plain"><option>-n <replaceable class="parameter">YYYY-MM-DD[UT]HH:MM:SS</replaceable></option></arg>
+      </arg>
+      <arg choice="opt">
+        <arg choice="plain"><option>-o</option></arg>
+      </arg>
+      <arg choice="opt">
+        <arg choice="plain"><option>-c <replaceable>camera-name</replaceable></option></arg>
+      </arg>
+      <arg choice="opt">
+        <arg choice="plain"><option>-s <replaceable>script</replaceable></option></arg>
+      </arg>
+      <arg choice="opt">
+        <arg choice="plain"><option>--pi <replaceable>PI name</replaceable></option></arg>
+      </arg>
+      <arg choice="opt">
+        <arg choice="plain"><option>--program <replaceable>program name</replaceable></option></arg>
+      </arg>
+      <arg choice="opt">
+        <arg choicd="plain"><option>--proper-motion <replaceable>proper motion</replaceable></option></arg>
+      </arg>
+      <arg choice="opt">
+        <arg choice="plain"><option>--delete-targets</option></arg>
+      </arg>
+      <arg choice="opt">
+        <arg choice="plain"><option>-N</option></arg>
+      </arg>
+      <arg choice="opt">
+        <arg choice="plain"><option>--tempdisable <replaceable>seconds</replaceable></option></arg>
+      </arg>
+      <arg choice="opt">
+        <arg choice="plain"><option>--airmass <option><replaceable><optional>lower</optional>:<optional>upper</optional></replaceable></option></option></arg>
+      </arg>
+      <arg choice="opt">
+        <arg choice="plain"><option>--lunarDistance <option><replaceable><optional>lower</optional>:<optional>upper</optional></replaceable></option></option></arg>
+      </arg>
+      <arg choice="opt">
+        <arg choice="plain"><option>--lunarAltitude <option><replaceable><optional>lower</optional>:<optional>upper</optional></replaceable></option></option></arg>
+      </arg>
+      <arg choice="opt">
+        <arg choice="plain"><option>--maxRepeats <replaceable>maximal number of observations</replaceable></option></arg>
+      </arg>
+      <arg choice="opt">
+        <arg choice="plain"><option>--id-only</option></arg>
+      </arg>
+      <arg choice="opt">
+        <arg choice="plain"><option>--name-only</option></arg>
+      </arg>
+      <arg choice="opt">
+        <arg choice="plain"><option>--reset-constraints</option></arg>
+      </arg>
+      <arg choice="plain" rep="repeat"><replaceable>target(s) ID</replaceable></arg>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1 id="description">
+    <title>DESCRIPTION</title>
+
+    <para>
+      <command>rts2-target</command> enable user to manage target entry. Using
+      that program, user can enable or disable targets, change target priority
+      and perform various other management tasks.
+    </para>
+
+  </refsect1>
+  <refsect1 id="options">
+    <title>OPTIONS</title>
+
+    &optiongnu;
+
+    <variablelist>
+      &dbapplist;
+      <varlistentry>
+        <term><option>-e</option></term>
+        <listitem>
+          <para>
+	    Enable target. Enabled target will be considered by
+	    <citerefentry><refentrytitle>rts2-selector</refentrytitle><manvolnum>1</manvolnum></citerefentry>
+	    for observation.
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-d</option></term>
+        <listitem>
+          <para>
+	    Disable target. Disabled target will not be considered by 
+	    <citerefentry><refentrytitle>rts2-selector</refentrytitle><manvolnum>1</manvolnum></citerefentry>
+	    for observation.
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-p <replaceable class="parameter">priority</replaceable></option></term>
+        <listitem>
+          <para>
+	    Change target priority.
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-b <replaceable class="parameter">bonus</replaceable></option></term>
+        <listitem>
+          <para>
+	    Change target bonus priority
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-t <replaceable class="parameter">YYYY-MM-DD[UT]HH:MM:SS</replaceable></option></term>
+        <listitem>
+          <para>
+	    Change target bonus time. When time specified on command line
+	    passed, target bonus will drop back to 0, leaving only fixed
+	    priority for selector to decide which target is the best one.
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-n <replaceable class="parameter">YYYY-MM-DD[UT]HH:MM:SS</replaceable></option></term>
+        <listitem>
+          <para>
+	    Set next observable date. Target will not be considered by
+	    <citerefentry><refentrytitle>rts2-selector</refentrytitle><manvolnum>1</manvolnum></citerefentry>
+	    before that time pass. Time can be specified as either local or UT
+	    - see
+	    <citerefentry><refentrytitle>rts2</refentrytitle><manvolnum>7</manvolnum></citerefentry>
+	    for details.
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-o</option></term>
+        <listitem>
+          <para>
+	    Clear next observable time. That will put time set by -n option or by selector back to NULL value, which means that
+	    target does not have any observational constrain.
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-c <replaceable class="parameter">camera-name</replaceable></option></term>
+        <listitem>
+          <para>
+	    Specify camera name. That is used once script is specified for the target. Ussuall call is:
+	    <screen>
+	      <command>&dhpackage;</command> <option>-c</option> <replaceable>C0</replaceable> <option>-s</option> <replaceable>'for 200 { E 20 }'</replaceable> <replaceable>1000 1001</replaceable>
+	    </screen>
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-s <replaceable class="parameter">script</replaceable></option></term>
+        <listitem>
+          <para>
+	    Specify script. Before <option>-s</option> option, you need to
+	    specify <option>-c</option> camera option for name of the camera.
+	    For script syntax, please consult
+	    <citerefentry><refentrytitle>rts2.script</refentrytitle><manvolnum>5</manvolnum></citerefentry>.
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--pi <replaceable class="parameter">PI name</replaceable></option></term>
+        <listitem>
+          <para>
+	    Set target(s) PI name.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--program <replaceable class="parameter">program name</replaceable></option></term>
+        <listitem>
+          <para>
+	    Set target(s) program name.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--proper-motion <replaceable class="parameter">proper motion</replaceable></option></term>
+        <listitem>
+          <para>
+	    Set target(s) proper motion. Report an error if target(s) of wrong
+	    type (e.g. not constant - GRBs,..) are provided in target list.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--delete-targets</option></term>
+        <listitem>
+          <para>
+	    Delete target(s) from database.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-N</option></term>
+        <listitem>
+          <para>
+	    Do not pretty print results, print them as number.
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--tempdisable <replaceable class="parameter">seconds</replaceable></option></term>
+        <listitem>
+          <para>
+	    Manipulate temporary disabling of target. Camera name
+	    (<option>-c</option>) must be specified before
+	    <option>--tempdisable</option>. If seconds is greater than 0, will
+	    insert or edit tempdisable command in the camera script. If seconds
+	    is less than 0, the command will remove first tempdisable element
+	    from the script.
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--airmass <option><replaceable><optional>lower</optional>:<optional>upper</optional></replaceable></option></option></term>
+        <listitem>
+          <para>
+	    Set interval for target airmasses. Colon separated lower and upper
+	    limits. Missing value indicate that the limit is not set in the
+	    missing direction. Empty interval, e.g. only :, causes program to
+	    remove airmass constraints.
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--lunarDistance <option><replaceable><optional>lower</optional>:<optional>upper</optional></replaceable></option></option></term>
+        <listitem>
+          <para>
+	    Set interval for target lunar distance. Colon separated lower and
+	    upper limits. Missing value indicate that the limit is not set in
+	    the missing direction. Empty inteval causes program to remove lunar
+	    distance constraints.
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--lunarAltitude <option><replaceable><optional>lower</optional>:<optional>upper</optional></replaceable></option></option></term>
+        <listitem>
+          <para>
+	    Set interval for lunar altiude (height of moon above horizon).
+            Colon separated lower and upper limits. Missing value indicate that the limit
+	    is not set in the missing direction. Empty interval causes program
+	    to remove lunar altitude constraints.
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--maxRepeats <replaceable>maximal number of observations</replaceable></option></term>
+	<listitem>
+          <para>
+	    Specify maximal number this observation will be repeated. Argument
+	    is an integer - upper limit for maximal number of repeats of given
+	    observation. Negative value causes program to remove maxRepeats
+	    constraint.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--id-only</option></term>
+        <listitem>
+          <para>
+	    Assumes that target(s) provided as arguments are target IDs. Exit
+	    if some of the arguments is not a number.
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--name-only</option></term>
+        <listitem>
+          <para>
+	    Assumes that target(s) provided as arguments are targets names. Do
+	    not try to resolve them as numeric.
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--reset-constraints</option></term>
+	<listitem>
+          <para>
+	    Reset constraints, do not append them. Without this option, new
+	    constraints are added to existing constraints. With this option
+	    set, new constraint file is created and will hold only constraints
+	    you specified (with <option>--airmass</option> and similar options).
+	  </para>
+	</listitem>
+      </varlistentry>
+    </variablelist>
+
+  </refsect1>
+  <refsect1>
+    <title>EXAMPLES</title>
+
+    <para>
+      Following example enable target 1000 for selector. It will set next
+      observing date to 13th March 2013, at 13 hours, 53 minutes and 43.133
+      seconds, either local (T) or UT (U) time. Target will not be observed before this date.
+    </para>
+
+    <screen>
+      <command>&dhpackage;</command> <option>-e</option> <option>-n</option> <replaceable>2013-03-13T13:53:43.133</replaceable> <replaceable>1000</replaceable>
+    </screen>
+
+    <screen>
+      <command>&dhpackage;</command> <option>-e</option> <option>-n</option> <replaceable>2013-03-13U13:53:43.133</replaceable> <replaceable>1000</replaceable>
+    </screen>
+
+    <para>
+      The above example will disable target for selection until 2013-03-13 and
+      change target script for camera C5. Note that as stated in the
+      <citerefentry><refentrytitle>rts2</refentrytitle><manvolnum>7</manvolnum></citerefentry>
+      page, you can change the time you're specifying from what your computer
+      thinks is local time to Universal Time by using U instead of T to
+      separate the date from time.
+    </para>
+
+    <screen>
+      <command>&dhpackage;</command> <option>--pi</option> <replaceable>'Joe the User'</replaceable> <option>--program</option> <replaceable>'Testing the impossible'</replaceable> <replaceable>NGC1234</replaceable>
+    </screen>
+
+    <para>
+      The above example will set target with name NGC1234 PI name to 'Joe the User'
+      and its program name to 'Testing the impossible'.
+    </para>
+
+
+    <screen>
+      <command>&dhpackage;</command> <option>-d</option> <option>-c</option> <replaceable>C5</replaceable> <option>-s</option> <replaceable>'F 3 for 10 { E 200 }'</replaceable> <replaceable>1000</replaceable>
+    </screen>
+
+    <para>
+      This example will set bonus and next bonus time - time until next bonus will be valid.
+    </para>
+
+    <screen>
+      <command>&dhpackage;</command> <option>-b</option> <replaceable>100</replaceable> <option>-t</option> <replaceable>2007-05-20T12:34:26</replaceable> <replaceable>1000</replaceable> <replaceable>1001</replaceable>
+    </screen>
+
+  </refsect1>
+  <refsect1>
+    <title>SEE ALSO</title>
+
+    <para>
+      <citerefentry>
+        <refentrytitle>rts2</refentrytitle>
+	<manvolnum>7</manvolnum>
+      </citerefentry>,
+      <citerefentry>
+        <refentrytitle>rts2-selector</refentrytitle>
+	<manvolnum>1</manvolnum>
+      </citerefentry>,
+      <citerefentry>
+        <refentrytitle>rts2.ini</refentrytitle>
+	<manvolnum>5</manvolnum>
+      </citerefentry>
+    </para>
+
+  </refsect1>
+</refentry>

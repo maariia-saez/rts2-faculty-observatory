@@ -1,0 +1,41 @@
+
+$RTS2/bin/rts2-xmlrpcclient --config $XMLRPCCON --quiet -c W0.info
+set curfilt=`$RTS2/bin/rts2-xmlrpcclient --config $XMLRPCCON --quiet -G W0.filter`
+@ curfilt ++
+
+switch ($1)
+	case [1-8]:
+		if ($curfilt != $1) then
+			rts2-logcom -n "Moving filter wheel to $1"
+			tele filter $1
+			exit 1
+		else
+#			rts2-logcom "Filter $1 already set"
+		  	exit 0
+		endif
+		breaksw
+	default:
+		set filters=(`cat /Realtime/lib/filt.dat`)
+		set curfilname=$filters[$curfilt]
+
+		set fname=$1
+		set fa=`grep "^$fname " $RTS2/etc/rts2/aliases | cut -f2 -d ' '`
+		if (x$fa != x) then
+			set fname=$fa
+		endif
+
+		if ($curfilname != $fname) then
+			set filt=`grep -n "$fname" /Realtime/lib/filt.dat | cut -f1 -d:`
+			if ($? != 0) then
+				rts2-logcom "filter $fname not present, ignoring the request"
+			else
+				rts2-logcom -n "Moving filter wheel to $fname"
+				tele filter $filt
+			endif
+			exit 1
+		else	
+#		  	rts2-logcom "Filter $fname already set"
+			exit 0
+		endif	
+		breaksw
+endsw

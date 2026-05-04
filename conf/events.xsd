@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Validation file for events file.
+  Validate with xmllint -schema events.xsd events
+
+  Copyright 2009 Petr Kubanek petr@kubanek.net
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:complexType name="action">
+    <xs:annotation><xs:documentation>Allowed actions.</xs:documentation></xs:annotation>
+    <xs:choice maxOccurs="unbounded">
+      <xs:element name="record" minOccurs="0">
+        <xs:annotation><xs:documentation>
+          Record value to the database, to table records.
+        </xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="command" type="xs:string" minOccurs="0"/>
+      <xs:element name="email" type="email" minOccurs="0"/>
+<!--    <xs:element name="sql" type="xs:string" minOccurs="0"/> -->
+    </xs:choice>
+    <xs:attribute name="if" type="xs:string" default="">
+      <xs:annotation><xs:documentation>
+        Executes only if this test evaluates to true.
+      </xs:documentation></xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+ <xs:simpleType name="email_addr">
+    <xs:annotation><xs:documentation>Email address string</xs:documentation></xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:pattern value="(\w+.*)+@(\w+.*)+.\w+"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="expand_string" mixed="true">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="device" type="xs:string">
+        <xs:annotation><xs:documentation>Print all values from given device, separated by new line</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="value">
+        <xs:annotation><xs:documentation>Print variable value. Value name is specified inside value, device name is a required argument.</xs:documentation></xs:annotation>
+	<xs:complexType>
+	  <xs:simpleContent>
+     	    <xs:extension base="xs:string">
+              <xs:attribute name="device" type="xs:string" use="optional"/>
+	    </xs:extension>
+	  </xs:simpleContent>
+	</xs:complexType>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="email">
+    <xs:annotation><xs:documentation>Email action. Specifies subject, recepient(s), and text.</xs:documentation></xs:annotation>
+    <xs:sequence>
+      <xs:element name="to" type="email_addr" minOccurs="1" maxOccurs="unbounded"/>
+      <xs:element name="cc" type="email_addr" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="bcc" type="email_addr" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="subject" type="expand_string" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="body" type="expand_string" minOccurs="1" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- state changes -->
+  <xs:complexType name="state">
+    <xs:complexContent>
+      <xs:extension base="action">
+        <xs:attribute name="state-mask" type="xs:integer"/>
+        <xs:attribute name="state" type="xs:integer" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  
+  <!-- value changes -->
+  <xs:complexType name="value">
+    <xs:annotation><xs:documentation>Actions bound to value change.</xs:documentation></xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="action">
+        <xs:attribute name="name" type="xs:string" use="required"/>
+	<xs:attribute name="test" type="xs:string" default=""/>
+        <xs:attribute name="cadency" type="xs:integer" default="-1">
+          <xs:annotation><xs:documentation>
+             Defines time interval (in seconds) between successive value change records.
+          </xs:documentation></xs:annotation>
+        </xs:attribute>
+     </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:simpleType name="messageType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="CRITICAL"/>
+      <xs:enumeration value="ERROR"/>
+      <xs:enumeration value="INFO"/>
+      <xs:enumeration value="WARNING"/>
+      <xs:enumeration value="DEBUG"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- messages arriving from device -->
+  <xs:complexType name="message">
+    <xs:annotation><xs:documentation>Actions bound to messages.</xs:documentation></xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="action">
+        <xs:attribute name="type" type="messageType" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="http">
+    <xs:sequence>
+      <xs:element name="docroot" minOccurs="0" maxOccurs="1" type="xs:string">
+        <xs:annotation><xs:documentation>Document root. Documents in this path overwrite standard documents.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="default-channel" minOccurs="0" maxOccurs="1" type="xs:int">
+        <xs:annotation><xs:documentation>Default channel. Set to -1 to display all channels on multi channels devices.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="public" minOccurs="0" maxOccurs="unbounded" type="xs:string">
+        <xs:annotation><xs:documentation>Public HTTP paths. * in string will match any string character in URL.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="dir" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation><xs:documentation>Directories mapped to external world.</xs:documentation></xs:annotation>
+	<xs:complexType>
+	  <xs:attribute name="path" type="xs:string" use="required"/>
+	  <xs:attribute name="to" type="xs:string" use="required"/>
+	</xs:complexType>
+      </xs:element>
+      <xs:element name="allsky" minOccurs="0" maxOccurs="unbounded" type="xs:string">
+        <xs:annotation><xs:documentation>Path to all sky images. The images are overplotted with BSC.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="defaultImageLabel" minOccurs="0" maxOccurs="1" type="xs:string">
+        <xs:annotation><xs:documentation>Default image label.</xs:documentation></xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="events">
+    <xs:sequence>
+      <xs:element name="device" minOccurs="0" maxOccurs="unbounded">
+	<xs:complexType>
+	  <xs:sequence>
+	    <xs:element name="state" type="state" minOccurs="0" maxOccurs="unbounded"/>
+	    <xs:element name="value" type="value" minOccurs="0" maxOccurs="unbounded"/>
+	    <xs:element name="message" type="message" minOccurs="0" maxOccurs="unbounded"/>
+	  </xs:sequence>
+          <xs:attribute name="name" type="xs:string"/>
+	</xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="bb">
+    <xs:sequence>
+      <xs:element name="server" minOccurs="1" maxOccurs="1" type="xs:string">
+        <xs:annotation><xs:documentation>Name (and port, separated with :) of BB server.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="observatory" minOccurs="1" maxOccurs="1" type="xs:string">
+        <xs:annotation><xs:documentation>Name of the observatory. This string is used to identify observatory on BB server.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="password" minOccurs="1" maxOccurs="1" type="xs:string">
+        <xs:annotation><xs:documentation>Password for observatory access.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="cadency" minOccurs="0" maxOccurs="1" type="xs:integer">
+        <xs:annotation><xs:documentation>Interval in seconds for master host re-posts</xs:documentation></xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="config">
+    <xs:sequence>
+      <xs:element name="http" type="http" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="events" type="events" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="bb" type="bb" minOccurs="0" maxOccurs="unbounded">
+      	<xs:annotation><xs:documentation>Big Brother server</xs:documentation></xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="config" type="config"/>
+
+</xs:schema>

@@ -1,0 +1,216 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" [
+
+  <!ENTITY dhfirstname "<firstname>Petr</firstname>">
+  <!ENTITY dhsurname   "<surname>Kubanek</surname>">
+  <!ENTITY dhdate      "<date>2008-08-29</date>">
+  <!ENTITY dhsection   "<manvolnum>1</manvolnum>">
+  <!ENTITY dhemail     "<email>petr@kubanek.net</email>">
+  <!ENTITY dhusername  "Petr Kubanek">
+  <!ENTITY dhpackage   "rts2-centrald">
+
+  <!ENTITY % rts2 SYSTEM "rts2.ent">
+  %rts2;
+]>
+
+<refentry>
+  <refentryinfo>
+    <title>&dhpackage;</title>
+    <productname>rts2</productname>
+    <productnumber>&rts2version;</productnumber>
+    &dhdate;
+    <authorgroup>
+      <author>
+        &dhfirstname;
+        &dhsurname;
+	<contrib>Wrote most of the RTS2 package.</contrib>
+	<address>
+          &dhemail;
+	</address>
+      </author>
+    </authorgroup>
+    <copyright>
+      <year>2008</year>
+      <holder>&dhusername;</holder>
+    </copyright>
+    &legal;
+  </refentryinfo>
+  <refmeta>
+    <refentrytitle>&dhpackage;</refentrytitle>
+    &dhsection;
+  </refmeta>
+  <refnamediv>
+    <refname>&dhpackage;</refname>
+    <refpurpose>Act as central component in RTS2 setup. Provides name services,
+    observatory state and synchronization services.</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>&dhpackage;</command>
+      &basicapp;
+      <arg choice="opt">
+	<arg choice="plain"><option>-i</option></arg>
+      </arg>
+      <arg choice="opt">
+	<arg choice="plain"><option>--local-port <replaceable>port number</replaceable></option></arg>
+      </arg>
+      <arg choice="opt">
+	<arg choice="plain"><option>--config <replaceable>config file</replaceable></option></arg>
+      </arg>
+      <arg choice="opt">
+        <arg choice="plain"><option>--logfile <replaceable>log file</replaceable></option></arg>
+      </arg>
+    </cmdsynopsis>
+
+  </refsynopsisdiv>
+
+  <refsect1 id="description">
+    <title>DESCRIPTION</title>
+
+    <para>
+      <command>&dhpackage;</command> is central part of any RTS2 setup. It
+      keeps system running. It provides name services (list of connected
+      devices and their location) and act as synchronization agent (synchronize
+      requests for states with actual device state). It also govern system
+      states between <emphasis>on</emphasis>, <emphasis>standby</emphasis>,
+      <emphasis>soft off</emphasis>, <emphasis>hard off</emphasis> and various day-night states:
+      <emphasis>day</emphasis>, <emphasis>evening</emphasis>,
+      <emphasis>dusk</emphasis>, <emphasis>night</emphasis>,
+      <emphasis>dawn</emphasis> and <emphasis>morning</emphasis>.
+    </para>
+
+  </refsect1>
+  <refsect1 id="description_states">
+    <title>RTS2 master states</title>
+
+    <para>
+       This paragraph gives description of RTS2 master states. This state
+       play an important role in whole system, as it governs which acctions
+       can be performed and which must be blocked.
+    </para>
+
+    <refsect2>
+      <title>Hard off</title>
+      <para>
+
+      </para>
+    </refsect2>
+    <refsect2>
+      <title>Soft off</title>
+      <para>
+
+      </para>
+    </refsect2>
+    <refsect2>
+      <title>Standby</title>
+      <para>
+
+      </para>
+    </refsect2>
+    <refsect2>
+      <title>On</title>
+      <para>
+
+      </para>
+    </refsect2>
+  </refsect1>
+  <refsect1 id="daystates">
+    <title>RTS2 day-night states</title>
+    <para>
+
+    </para>
+    <refsect2>
+      <title>Day</title>
+      <para>
+
+      </para>
+    </refsect2>
+    <refsect2>
+      <title>Evening</title>
+      <para>
+
+      </para>
+    </refsect2>
+    <refsect2>
+      <title>Dusk</title>
+      <para>
+
+      </para>
+    </refsect2>
+    <refsect2>
+      <title>Night</title>
+      <para>
+
+      </para>
+    </refsect2>
+    <refsect2>
+      <title>Dawn</title>
+      <para>
+
+      </para>
+    </refsect2>
+    <refsect2>
+      <title>Morning</title>
+      <para>
+
+      </para>
+    </refsect2>
+  </refsect1>
+  <refsect1 id="options">
+    <title>OPTIONS</title>
+
+    <para>
+      This program follows the usual &gnu; command line syntax,
+      with long options starting with two dashes (`--').  A summary of
+      options is included below.
+    </para>
+
+    <variablelist>
+      &basicapplist;
+      <varlistentry>
+        <term><option>--local-port <replaceable class="parameter">port</replaceable></option></term>
+        <listitem>
+          <para>
+	    Specify port of on which <command>&dhpackage;</command> listen for
+	    incoming connections. Default value is 617. This value means that
+	    <command>&dhpackage;</command> must be run under root. If you want
+	    to change this behaviour, specify there another port and add --port
+	    option to all devices (which is ussually done in
+	    <citerefentry><refentrytitle>rts2.devices</refentrytitle><manvolnum>5</manvolnum></citerefentry>
+	    file.
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--config <replaceable class="parameter">config-file</replaceable></option></term>
+        <listitem>
+          <para>Specify configuration file. defaults to <filename>/etc/rts2/rts2.ini</filename>.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--logfile</option></term>
+        <listitem>
+	  <para>Specify logfile name. Defaults to /var/log/rts2-debug. If set
+	  to "-", <command>&dhpackage;</command> will log to standart
+	  output.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+  <refsect1>
+    <title>SEE ALSO</title>
+
+    <para>
+      <citerefentry>
+        <refentrytitle>rts2</refentrytitle>
+	<manvolnum>7</manvolnum>
+      </citerefentry>,
+      <citerefentry>
+        <refentrytitle>rts2.ini</refentrytitle>
+	<manvolnum>5</manvolnum>
+      </citerefentry>
+    </para>
+
+  </refsect1>
+</refentry>

@@ -1,0 +1,316 @@
+#!/usr/bin/env python
+
+# g(pl)-Point - GPLed Telescope pointing model fit, as described in paper by Marc Buie:
+#
+# ftp://ftp.lowell.edu/pub/buie/idl/pointing/pointing.pdf 
+#
+# (C) 2015-2016 Petr Kubanek <petr@kubanek.net>
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+from __future__ import print_function
+
+import sys
+import rts2.gpoint
+import numpy as np
+
+import argparse
+
+def generate_model(args):
+	"""Generate pointing model."""
+	model = rts2.gpoint.GPoint(args.verbose,latitude=args.latitude)
+	if args.refine is not None:
+		model.load(args.refine)
+
+	for e in args.extra:
+		es = e.split(':')
+		if len(es) != 4:
+			sys.exit('invalid extra function description: {0}'.format(e))
+		model.add_extra(*es)
+	
+	if args.fixed:
+		if args.fixed[0] == '!':
+			model.set_vary(args.fixed[1:].split(','))
+		else:
+			model.set_fixed(args.fixed.split(','))
+
+	model.process_files(args.inputfiles,args.flips)
+	if args.stat_only == False:
+		while True:
+			model.fit(maxfev=args.maxfev, ftol=args.ftol, xtol=args.xtol, gtol=args.gtol)
+			model.print_params()
+			if args.filter is None:
+				break
+			fs = args.filter.split(':')
+			if len(fs) != 2 and len(fs) != 3:
+				sys.exit('invalid filter parameter')
+			filnum = int(fs[2]) if len(fs) == 3 else 1
+			removed = model.filter(fs[0], float(fs[1]), filnum)
+			if removed is None:
+				print('model within bounds')
+				break
+			for r in removed:
+				print('removed line:\n{0}'.format('\n'.join(r)))
+
+		if args.autofix is not None:
+			model.autofix_terms(args.autofix)
+
+	model.print_stat()
+
+	if args.model_output is not None:
+		if args.refine is not None:
+			mr = rts2.gpoint.GPoint(args.verbose,latitude=args.latitude)
+			mr.load(args.refine)
+			model.fit_to_extra()
+			model.add_model(mr)
+		model.save(args.model_output)
+	if args.error_output is not None:
+		f = open(args.error_output,'w+')
+		out_dat = model.indata
+		out_dat = np.append(out_dat,[[x*3600] for x in model.diff_ha],axis=1)
+		out_dat = np.append(out_dat,[[x*3600] for x in model.diff_dec],axis=1)
+		out_dat = np.append(out_dat,[[x*3600] for x in model.diff_angular_hadec],axis=1)
+		out_dat = np.append(out_dat,[[x*3600] for x in model.diff_alt],axis=1)
+		out_dat = np.append(out_dat,[[x*3600] for x in model.diff_az],axis=1)
+		out_dat = np.append(out_dat,[[x*3600] for x in model.diff_angular_altaz],axis=1)
+		for b in out_dat:
+			f.write('{0}\n'.format('\t'.join(b)))
+		f.close()
+
+	plots = args.plots
+	if args.basic_plots:
+		bp='num:model-err,num:ha-err,num:dec-err'
+		plots=','.join([bp,plots]) if plots else bp
+
+	if args.altaz_plots:
+		altaz='num:model-err%0:0:1:3,num:ha-err%1:0:1:1,num:dec-err%2:0:1:1,paz:contour-model-err%1:1:2:2'
+		plots=','.join([altaz,plots]) if plots else altaz
+
+	if args.altaz_heatmaps:
+		altaz='paz:contour-real-err%0:0:1:1,paz:contour-model-err%0:1:1:1'
+		plots=','.join([altaz,plots]) if plots else altaz
+
+	if plots:
+		model.plot(plots,args.oplot)
+
+	if args.report:
+		model.pdf_report(args.report,args.report_template)
+
+# Plot model offsets
+def plot_offsets(args):
+	if args.latitude == None:
+		sys.exit('you must specify latitude as parameter')
+	# load model..
+	model = rts2.gpoint.GPoint(args.verbose,latitude=args.latitude)
+	for fn in args.inputfiles:
+		model.load(fn)
+
+	model.fit_to_extra()
+	
+	ha_b,ha_e,dec = [float(f) for f in args.plot_offsets.split(':')]
+	import pylab
+
+	terms = []
+
+	if args.show_offset_terms == None:
+		plotgrid = (1,1)
+	else:
+		if args.show_offset_terms == '*':
+			terms = list(model.best.params.keys())
+		else:
+			terms = args.show_offset_terms.split(',')
+		plotgrid = (1+len(terms),1)
+
+	subplot = pylab.subplot2grid(plotgrid,(0,0),colspan=1,rowspan=1)
+	model.plot_offsets(model.best.params,subplot,ha_b,ha_e,dec)
+
+	r = 1
+	for t in terms:
+		print('plotting term {0}'.format(t))
+		b = model.best.params
+		for ti in list(b.keys()):
+			if not(ti == t):
+				b[ti].value = 0
+		if model.verbose > 1:
+			print(b)
+		subplot = pylab.subplot2grid(plotgrid,(r,0),colspan=1,rowspan=1)
+		model.plot_offsets(b,subplot,ha_b,ha_e,dec)
+		r += 1
+
+	pylab.show()
+
+def add_models(args):
+	if len(args.inputfiles) < 2:
+		sys.exit('need at least two models to add')
+
+	m_out = rts2.gpoint.GPoint(args.verbose,latitude=args.latitude)
+	m_out.load(args.inputfiles[0])
+	for f in args.inputfiles[1:]:
+		m = rts2.gpoint.GPoint()
+		m.load(f)
+		m_out.add_model(m)
+	
+	if args.model_output is not None:
+		m_out.save(args.model_output)
+
+	print(m_out)
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,description='G-Point Model fitting and error plotting routines. Input/output file format is described in manual page (man gpoint).\n\nExample usage:\n\n'\
+'\tgpoint -p ha:ha-merr,mjd:ha-err,num:dec-err modelin\tproduces model and ha model error,ha-err and dec-err plots')
+parser.add_argument('inputfiles',help='input file(s)',type=str,nargs='*')
+parser.add_argument('-o',dest='model_output',action='store',help='model output filename')
+parser.add_argument('-p',dest='plots',action='store',help='plot graphs, please see manual page for examples (allowed axis names: alt-err,az-err,dec-err,ha-err,alt-merr,az-merr,dec-merr,ha-merr,mjd,num,paz,az,alt,dec,ha,model-err,real-err)')
+parser.add_argument('-s',dest='oplot',action='store',help='save plot to file instead of displaying it on screen',default=None)
+parser.add_argument('--basic-plots',dest='basic_plots',action='store_true',help='plot basic graphs (num:model-err,num:ha-err,num:dec-err)',default=False)
+parser.add_argument('--stat-only',dest='stat_only',action='store_true',help='do not attempt to fit the model - only print statistics',default=False)
+parser.add_argument('--altaz-plots',dest='altaz_plots',action='store_true',help='plot basic and Alt-az distribution graphs (num:model-err,num:ha-err,num:dec-err,paz:contour-model-err%%1:1:2:2)',default=False)
+parser.add_argument('--altaz-heatmaps',dest='altaz_heatmaps',action='store_true',help='plot alt-az distributions with predicted modelled and real (unmodelled) heatmaps',default=False)
+parser.add_argument('--flip',dest='flips',action='store',help='flips (both, east, west - select pointings only on given side)',default='both')
+parser.add_argument('-e',dest='error_output',action='store',help='save file with pointing and model errors')
+parser.add_argument('-v',dest='verbose',action='count',help='verbose')
+parser.add_argument('--mnt-flip',dest='mnt_flip',action='store',help='select only observations with the given flip (1 where abs(dec)>90')
+parser.add_argument('--latitude',dest='latitude',action='store',default=None,type=float,help='observatory latitude (north is positive)')
+parser.add_argument('--model-input',dest='model_input',action='store_true',default=False,help='input file(s) are existing model file(s) to load and investigate')
+parser.add_argument('--plot-offsets',dest='plot_offsets',action='store',default=None,type=str,help='plot offsets from the model file; either specify ha start-end-dec, or start interactive mode')
+parser.add_argument('--show-offset-terms',dest='show_offset_terms',action='store',default=None,type=str,help='terms to show on subplot')
+parser.add_argument('--filter',dest='filter',action='store',default=None,help='filter values which does not fit the model. Those can be errornous measurements')
+parser.add_argument('--add-models',dest='add_models',action='store_true',default=False,help='add input models together, produce output model combining both')
+parser.add_argument('--refine',dest='refine',action='store',help='refine existing model - use the same extra parameters, do fit, add two together')
+parser.add_argument('--fixed',dest='fixed',action='store',help='list (, separated) of parameters to fix (ie,ia,..); !negates the selection')
+parser.add_argument('--autofix',dest='autofix',action='store',help='fix terms with highest error until all errors are below given value',type=float)
+parser.add_argument('--extra',dest='extra',action='append',default=[],help='extra (harmonics,...) functions')
+parser.add_argument('--maxfev',dest='maxfev',action='store',default=10000,help='maximal number of least square fitting itterations',type=int)
+parser.add_argument('--ftol',dest='ftol',action='store',default=1.49012e-08,help='relative error desired in the sum of squares',type=float)
+parser.add_argument('--xtol',dest='xtol',action='store',default=1.49012e-08,help='relative error desired in the approximate solution',type=float)
+parser.add_argument('--gtol',dest='gtol',action='store',default=0,help='orthogonality desired between the function vector and the columns of the Jacobian',type=float)
+parser.add_argument('-r',dest='report',action='store',default=None,help='PDF report filename')
+parser.add_argument('--report-template',dest='report_template',action='store',default=None,help='PDF report template file')
+
+parser.add_argument('-i',dest='interactive',action='store_true',default=False,help='run interactively, open console to type commands')
+
+args = parser.parse_args()
+
+import cmd
+import glob
+class GPointInterpreter(cmd.Cmd):
+	def __init__(self):
+		cmd.Cmd.__init__(self)
+		import signal
+		self.model = rts2.gpoint.GPoint()
+
+		import readline
+		import os
+		import atexit
+
+		histfile = os.path.join(os.path.expanduser('~'), ".gpoint_history")
+		try:
+			readline.read_history_file(histfile)
+			readline.set_history_length(1000)
+			# do not use / as arguments replacement
+			delims = readline.get_completer_delims()
+			readline.set_completer_delims(delims.replace('/',''))
+
+		except Exception as er:
+			if args.verbose:
+				print('Cannot read history file {0}:{1}'.format(histfile,str(er)))
+			open(histfile, 'wb').close()
+		atexit.register(readline.write_history_file, histfile)
+
+		signal.signal(signal.SIGINT, lambda n, f: self.do_exit(None))
+
+	def do_print(self, line):
+		"""print - prints current model parameters"""
+		if self.model is None:
+			print('no model loaded')
+			return
+		if self.model.modelfile is not None:
+			print('Model file {0}'.format(self.model.modelfile))
+		if line == 'params':
+			for k in list(self.model.best.params.keys()):
+				print('{0} {1:.10f}'.format(k,self.model.best.params[k].value))
+		elif line == 'degrees':
+			print(self.model.to_string('degrees'))
+		elif line == 'arcminutes' or line == 'minutes':
+			print(self.model.to_string('arcminutes'))
+		elif line == 'arcseconds' or line == 'seconds':
+			print(self.model.to_string('arcseconds'))
+		else:
+			print(str(self.model))
+	
+	def complete_print(self, text, line, begidx, endidx):
+		return [x for x in ['params', 'degrees', 'arcminutes', 'arcseconds', 'minutes', 'seconds'] if x[:len(text)] == text]
+
+	def do_fit(self,line):
+		"""fit - fit model parameters from modelin file"""
+		self.model.process_files([line])
+		self.model.fit()
+
+	def complete_fit(self, text, line, begidx, endidx):
+		return glob.glob(text + '*')
+
+	def do_load(self, line):
+		"""load - loads model file"""
+		self.model.load(line)
+		self.do_print('')
+
+	def do_add(self, line):
+		"""add - add extra (harmonics or standard) parameters"""
+		pass
+
+	def do_remove(self, line):
+		"""remove - removes terms from model"""
+		try:
+			self.model.best.params[line].value = 0
+			self.model.best.params[line].set(vary=False)
+		except Exception as ex:
+			print(str(ex))
+
+	def complete_remove(self, text, line, begidx, endidx):
+		return [x for x in list(self.model.best.params.keys()) if x[:len(text)] == text]
+
+	def do_save(self, line):
+		"""save - save current model to file"""
+		if self.model.best is None:
+			print('No model loaded/fitted')
+			return
+		self.model.save(line)
+		print('Model saved to {0}'.format(line))
+	
+	def complete_load(self, text, line, begidx, endidx):
+		return glob.glob(text + '*')
+	
+	def do_exit(self, line):
+		print()
+		sys.exit()
+
+	def do_EOF(self, line):
+		return True
+
+if args.interactive:
+	gi = GPointInterpreter()
+	gi.prompt = 'gpoint> '
+	while True:
+		line = gi.cmdloop('This is GPoint interactive shell. Type help to get some ideas how I can help you.')
+
+if len(args.inputfiles) == 0:
+	sys.exit('Expecting at least filename to work with')
+
+
+if args.model_input:
+	plot_offsets(args)
+elif args.add_models:
+	add_models(args)
+else:
+	generate_model(args)

@@ -1,0 +1,218 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd" [
+
+  <!ENTITY dhfirstname "<firstname>Petr</firstname>">
+  <!ENTITY dhsurname   "<surname>Kubanek</surname>">
+  <!ENTITY dhdate      "<date>2015-11-29</date>">
+  <!ENTITY dhsection   "<manvolnum>1</manvolnum>">
+  <!ENTITY dhemail     "<email>petr@kubanek.net</email>">
+  <!ENTITY dhusername  "Petr Kubanek">
+  <!ENTITY dhpackage   "rts2-newtarget">
+
+  <!ENTITY % rts2 SYSTEM "rts2.ent">
+  %rts2;
+]>
+
+<refentry>
+  <refentryinfo>
+    <title>&dhpackage;</title>
+    <productname>rts2</productname>
+    <productnumber>&rts2version;</productnumber>
+    &dhdate;
+    <authorgroup>
+      <author>
+        &dhfirstname;
+        &dhsurname;
+	<contrib>Wrote most of the RTS2 package.</contrib>
+	<address>
+          &dhemail;
+	</address>
+      </author>
+    </authorgroup>
+    <copyright>
+      <year>2010</year>
+      <holder>&dhusername;</holder>
+    </copyright>
+    <copyright>
+      <year>2015</year>
+      <holder>&dhusername;</holder>
+    </copyright>
+    &legal;
+  </refentryinfo>
+  <refmeta>
+    <refentrytitle>&dhpackage;</refentrytitle>
+    &dhsection;
+  </refmeta>
+  <refnamediv>
+    <refname>&dhpackage;</refname>
+    <refpurpose>Insert into database new target.</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>&dhpackage;</command>
+      <arg choice="opt"><option>-a</option></arg>
+      <arg choice="opt"><option>-m</option></arg>
+      <arg choice="opt"><option>-r</option> <replaceable class="parameter">radius</replaceable></arg>
+      <arg choice="opt"><option>-f</option></arg>
+      <arg choice="opt"><option>-n</option></arg>
+      <arg choice="opt"><option>--pi</option> <replaceable class="parameter">PI name</replaceable></arg>
+      <arg choice="opt"><option>--program</option> <replaceable class="parameter">program name</replaceable></arg>
+      &dbapp;
+    </cmdsynopsis>
+
+    &helpsynopsis;
+
+  </refsynopsisdiv>
+
+  <refsect1 id="description">
+    <title>DESCRIPTION</title>
+
+    <para>
+      <command>rts2-newtarget</command> insert new target into target database.
+      You can specify target information either on command line, or enter them
+      interactively.
+    </para>
+
+  </refsect1>
+  <refsect1>
+    <title>Resolved strings</title>
+    <para>
+      When <command>rts2-newtarget</command> asks for a target name, it expect
+      string describing target properties. The following are resolved:
+    </para>
+    <variablelist>
+      <varlistentry>
+        <term>RA and DEC</term>
+        <para>
+          Declination shall be prefixed with + or -, all possible formats
+          (degrees, hexadecimal separated by : or spaces, ..) are accepted.
+        </para>
+      </varlistentry>
+      <varlistentry>
+        <term>Simbad target name</term>
+        <para>
+          Any name resolvable by Simbad/Vizier can be entered.
+        </para>
+      </varlistentry>
+      <varlistentry>
+        <term>MPEC name</term>
+        <para>
+          MPEC comments and minor planets names and designation can be entered.
+        </para>
+      </varlistentry>
+      <varlistentry>
+        <term>TLE</term>
+        <para>
+          Satellite two lines elements, separated with | (pipe). RTS2 will
+          compute actual satellite position with  using the integrated Pluto
+          library.
+        </para>
+      </varlistentry>
+      <varlistentry>
+        <term>TLE</term>
+        <para>
+
+        </para>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+  <refsect1 id="options">
+    <title>OPTIONS</title>
+
+    &optiongnu;
+
+    <variablelist>
+      <varlistentry>
+        <term><option>-a</option></term>
+        <listitem>
+          <para>Auto assign target ID. You then do not need to specify it. Please see -h for examples.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-m</option></term>
+        <listitem>
+	  <para>
+	    Will search for the object among target. If target with similar
+	    name or position already exists, return its ID. Search radius can
+            be modified with <option>-r</option>.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-r <replaceable class="parameter">radius</replaceable></option></term>
+        <listitem>
+          <para>
+	    Radius (in degrees) which will be searched for targets. If some
+	    target already exists within given radius from your specified
+	    position, you will be asked if you would like to use it, or really
+	    enter new target.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-f</option></term>
+	<listitem>
+	  <para>
+	    Forced run. Don't ask user questions about whatever to overwrite
+	    existing target etc.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-n</option></term>
+        <listitem>
+          <para>
+            No coordinates. Don't move the telescope.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--pi <replaceable class="parameter">PI name</replaceable></option></term>
+        <listitem>
+          <para>
+	    Set newly created target PI name.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--program <replaceable class="parameter">program name</replaceable></option></term>
+        <listitem>
+          <para>
+	    Set newly created target program name.
+	  </para>
+	</listitem>
+      </varlistentry>
+      &dbapplist;
+    </variablelist>
+  </refsect1>
+  <refsect1>
+    <title>EXAMPLES</title>
+
+    <screen>
+      <command>&dhpackage;</command> <option>-a</option> <replaceable>NGC1673</replaceable>
+      <command>&dhpackage;</command> <option>-a</option> <replaceable>"1 19448U 88076D&nbsp;&nbsp;&nbsp;02255.52918163 -.00000002&nbsp;&nbsp;00000-0&nbsp;&nbsp;10000-3 0&nbsp;&nbsp;4873|2 19448&nbsp;&nbsp;65.7943 338.1906 7142558 193.4853 125.7046&nbsp;&nbsp;2.04085818104610"</replaceable>
+      <command>&dhpackage;</command> <option>--pi</option> <replaceable>'Joe The User'</replaceable> <option>--program</option> <replaceable>'Search for high Z'</replaceable> <option>-a</option> <replaceable>NGC1673</replaceable>
+    </screen>
+
+  </refsect1>
+  <refsect1>
+    <title>SEE ALSO</title>
+
+    <para>
+      <citerefentry>
+        <refentrytitle>rts2</refentrytitle>
+	<manvolnum>7</manvolnum>
+      </citerefentry>,
+      <citerefentry>
+        <refentrytitle>rts2.ini</refentrytitle>
+	<manvolnum>5</manvolnum>
+      </citerefentry>,
+      <citerefentry>
+        <refentrytitle>rts2-targetinfo</refentrytitle>
+	<manvolnum>1</manvolnum>
+      </citerefentry>
+    </para>
+
+  </refsect1>
+</refentry>

@@ -1,0 +1,209 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" [
+
+  <!ENTITY dhfirstname "<firstname>Petr</firstname>">
+  <!ENTITY dhsurname   "<surname>Kubanek</surname>">
+  <!ENTITY dhdate      "<date>2008-04-21</date>">
+  <!ENTITY dhsection   "<manvolnum>1</manvolnum>">
+  <!ENTITY dhemail     "<email>petr@kubanek.net</email>">
+  <!ENTITY dhusername  "Petr Kubanek">
+  <!ENTITY dhpackage   "rts2-telmodeltest">
+
+  <!ENTITY % rts2 SYSTEM "rts2.ent">
+  %rts2;
+]>
+
+<refentry>
+  <refentryinfo>
+    <title>&dhpackage;</title>
+    <productname>rts2</productname>
+    <productnumber>&rts2version;</productnumber>
+    &dhdate;
+    <authorgroup>
+      <author>
+        &dhfirstname;
+        &dhsurname;
+	<contrib>Wrote most of the RTS2 package.</contrib>
+	<address>
+          &dhemail;
+	</address>
+      </author>
+    </authorgroup>
+    <copyright>
+      <year>2007</year>
+      <holder>&dhusername;</holder>
+    </copyright>
+    &legal;
+  </refentryinfo>
+  <refmeta>
+    <refentrytitle>&dhpackage;</refentrytitle>
+    &dhsection;
+  </refmeta>
+  <refnamediv>
+    <refname>&dhpackage;</refname>
+    <refpurpose>Test pointing model.</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+
+    <cmdsynopsis>
+      <command>&dhpackage;</command>
+      &basicapp;
+      <arg choice="plain"><option>-m <replaceable class="parameter">modelfile</replaceable></option></arg>
+      <arg choice="opt"><arg choice="plain"><option>-e</option></arg>
+    	<arg choice="opt"><arg choice="plain"><option>-e</option></arg></arg>
+      </arg>
+      <arg choice="opt"><arg choice="plain"><option>-R</option></arg></arg>
+      <arg choice="opt"><arg choice="plain"><option>-a</option></arg></arg>
+      <arg choice="opt"><arg choice="plain"><option>-j</option></arg></arg>
+      <arg choice="opt"><arg choice="plain"><option>-N</option></arg></arg>
+      <arg choice="opt"><arg choice="plain"><option>-v</option></arg></arg>
+      <arg choice="plain">model.dat</arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>&dhpackage;</command>
+      &basicapp;
+      <arg choice="plain"><option>-m <replaceable class="parameter">modelfile</replaceable></option></arg>
+      <arg choice="plain"><option>-i</option></arg>
+      <arg choice="plain">image.fits ...</arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>&dhpackage;</command>
+      &basicapp;
+      <arg choice="plain"><option>-r</option></arg>
+    </cmdsynopsis>
+
+  </refsynopsisdiv>
+
+  <refsect1 id="description">
+    <title>DESCRIPTION</title>
+    
+    <para>
+      This program performs various tests of the pointing model. It can be used
+      to compare corrections predicted by pointing model with these measured by
+      astrometry, either by using model.dat file (TP input file), or from raw fits
+      images. The former should be considered as the main functionality, most 
+      options are applicable only for this case, without additional notice.
+      Operation on raw images is rather informative, it uses simple logic, 
+      without exact computations (still working good in most cases).
+    </para>
+
+  </refsect1>
+  <refsect1 id="options">
+    <title>OPTIONS</title>
+
+    &optiongnu;
+
+    <variablelist>
+      &basicapplist;
+      <varlistentry>
+        <term><option>-m</option></term>
+	<listitem>
+	  <para>
+	    Specify tpoint model file to use.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-e</option></term>
+	<listitem>
+	  <para>
+	    Print errors of measured vs predicted. Use two e to print also errors 
+	    in RA and DEC. All output values are in arcminutes.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-R</option></term>
+	<listitem>
+	  <para>
+	    Include atmospheric refraction into corrections.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-a</option></term>
+	<listitem>
+	  <para>
+	    Print also alt-az coordinates together with errors.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-j</option></term>
+	<listitem>
+	  <para>
+	    Print also computed JD together with errors. JD is computed using longitude, 
+	    obtained from local rts2.ini file. It could be wrong for some cases (e.g. 
+	    while testing model on non-original system), but it should not influence 
+	    the results. Still, it could be usable for comparing the acquire time of 
+	    the images.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-N</option></term>
+	<listitem>
+	  <para>
+	    Print numbers, do not pretty print.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-v</option></term>
+	<listitem>
+	  <para>
+	    Report model progress.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-i</option></term>
+	<listitem>
+	  <para>
+	    Print model for given images. Alternative program operations - from images 
+	    on imput get difference between intended and real (astrometry-measured) 
+	    position, and compare this with our model results. It uses only trivial 
+	    computations (no real transformations, only differences, assuming the 
+	    precession, refraction etc is invariant within used limits), which could 
+	    be inaccurate in some cases. The columns are described in the output, 
+	    the last column in output should be close to zero if the model is good.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-r</option></term>
+	<listitem>
+	  <para>
+	    Print random RA DEC, handy for telescope pointing tests.
+	  </para>
+	</listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+  <refsect1>
+    <title>SEE ALSO</title>
+
+    <para>
+      <citerefentry>
+        <refentrytitle>rts2</refentrytitle>
+	<manvolnum>7</manvolnum>
+      </citerefentry>,
+      <citerefentry>
+        <refentrytitle>rts2.ini</refentrytitle>
+	<manvolnum>5</manvolnum>
+      </citerefentry>,
+      <citerefentry>
+        <refentrytitle>rts2-horizon</refentrytitle>
+	<manvolnum>1</manvolnum>
+      </citerefentry>,
+      <citerefentry>
+        <refentrytitle>rts2-telmodeltest</refentrytitle>
+	<manvolnum>1</manvolnum>
+      </citerefentry>
+    </para>
+
+  </refsect1>
+</refentry>

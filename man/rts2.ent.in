@@ -1,0 +1,464 @@
+<!ENTITY rts2version "@VERSION@">
+<!ENTITY gnu         "<acronym>GNU</acronym>">
+<!ENTITY gpl         "&gnu; <acronym>GPL</acronym>">
+
+<!ENTITY prompt      "<prompt>user@host:~$</prompt>">
+
+<!ENTITY optiongnu    "
+<para>
+  RTS2 follows the usual &gnu; command line syntax, with long options
+  starting with two dashes (`--').  A summary of options is included below.
+</para>
+<para>
+  You can use -- (two dashes with space) to escape arguments which start with
+  '-'. So to run command with -1 as an argument, you must specify -- -1 on
+  the command line.
+</para>
+">
+
+<!ENTITY legal       "
+<legalnotice>
+  <para>
+    This manual page was written by &dhusername; &lt;&dhemail;&gt;.  Permission is
+    granted to copy, distribute and/or modify this document under the terms
+    of the &gnu; General Public License, Version 2 any later version
+    published by the Free Software Foundation.
+  </para>
+</legalnotice>
+">
+
+
+<!ENTITY fzu  "Petr Kubanek, Institute of Physics">
+
+<!ENTITY help "
+<arg choice='opt'><option>--version</option></arg>
+<arg choice='opt'>
+   <arg choice='plain'><option>-h</option></arg>
+   <arg choice='plain'><option>--help</option></arg>
+</arg>
+">
+
+<!ENTITY helpsynopsis "
+<cmdsynopsis>
+  <command>&dhpackage;</command>
+  &help;
+</cmdsynopsis>
+">  
+
+<!ENTITY helplist "
+<varlistentry>
+  <term><option>--version</option></term>
+  <listitem>
+    <para>Show application version.</para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-h</option></term>
+  <term><option>--help</option></term>
+  <listitem>
+    <para>
+      Prints quick help and summary of the application's options. As the
+      options summary is generated from the source code, it is the definitive
+      source of the options - manual pages might miss some options.
+    </para>
+  </listitem>
+</varlistentry>
+">
+
+<!ENTITY basicapp  "
+<arg choice='opt'><option>--UT</option></arg>
+<arg choice='opt'><option>--debug</option></arg>
+">
+
+<!ENTITY basicapplist  "
+<varlistentry>
+  <term><option>--UT</option></term>
+  <listitem>
+    <para>
+      Prints all dates in UT time. The input parameters are not affected - the
+      UT vs. local time is distinguished by specifing T or L (U or G) in time
+      entry.
+    </para>  
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>--debug</option></term>
+  <listitem>
+    <para>
+      Prints out debugging messages. This is primary usefull for debugging
+      during system development.
+    </para>  
+  </listitem>
+</varlistentry>
+&helplist;
+">
+
+<!ENTITY configapp "
+<arg choice='opt'><option>--config <replaceable>config file</replaceable></option></arg>
+&basicapp;
+">
+
+<!ENTITY dbapp  "
+<arg choice='opt'><option>--database</option> <replaceable class='parameter'>database</replaceable></arg>
+<arg choice='opt'><option>--debugdb</option></arg>
+&configapp;
+">
+
+<!ENTITY dbapponly "
+<arg choice='opt'><option>--database</option> <replaceable class='parameter'>database</replaceable></arg>
+<arg choice='opt'><option>--debugdb</option></arg>
+<arg choice='opt'><option>--config</option> <replaceable class='parameter'>config file</replaceable></arg>
+" >
+
+<!ENTITY dbapponlylist "
+<varlistentry>
+   <term><option>--database</option> <replaceable class='parameter'>database-name</replaceable></term>
+   <listitem>
+     <para>
+       Specify database name. Will overwrite database name specified in
+       <citerefentry><refentrytitle>rts2.ini</refentrytitle><manvolnum>5</manvolnum></citerefentry>.
+     </para>  
+   </listitem>
+   <term><option>--debugdb</option> <replaceable class='parameter'>database-name</replaceable></term>
+   <listitem>
+     <para>
+       Print database debugging messages. This option is primary indendet for system developers to
+       track possible problems in communication between the application and the database.
+     </para>  
+   </listitem>
+</varlistentry> 
+&configapplist;
+">
+
+<!ENTITY dbapplist "
+&dbapponlylist;
+&basicapplist;
+">
+
+<!ENTITY configapplist "
+<varlistentry>
+  <term><option>--config</option> <replaceable class='parameter'>config-file</replaceable></term>
+  <listitem>
+    <para>
+      Specify configuration file. defaults to <filename>/etc/rts2/rts2.ini</filename>. Please see
+      <citerefentry><refentrytitle>rts2.ini</refentrytitle><manvolnum>5</manvolnum></citerefentry>.
+    </para>
+  </listitem>
+</varlistentry>
+" >
+
+<!ENTITY deviceapp "
+<arg choice='opt'><option>-d</option> <replaceable class='parameter'>device name</replaceable></arg>
+<arg choice='opt'><option>--modefile</option> <replaceable class='parameter'>filename</replaceable></arg>
+<arg choice='opt' rep='repeat'><option>--server</option> <replaceable class='parameter'>hostname<arg choice='opt'>:port</arg></replaceable></arg>
+<arg choice='opt'><option>--localhost</option> <replaceable class='parameter'>hostname</replaceable></arg>
+<arg choice='opt'><option>--notcheck</option></arg>
+<arg choice='opt'><option>--noauth</option></arg>
+<arg choice='opt'><option>--run-as</option> <replaceable class='parameter'>user<arg choice='opt'>.group</arg></replaceable></arg>
+<arg choice='opt'><option>--lock-prefix</option> <replaceable class='parameter'>path to lock file</replaceable></arg>
+<arg choice='opt'><option>--local-port</option> <replaceable class='parameter'>local port</replaceable></arg>
+<arg choice='opt'><option>--autorestart</option> <replaceable class='parameter'>time in seconds</replaceable></arg>
+<arg choice='opt'><option>-i</option></arg>
+&basicapp;
+" >
+
+<!ENTITY deviceapplist "
+<varlistentry>
+  <term><option>-d</option> <replaceable class='parameter'>device name</replaceable></term>
+  <listitem>
+    <para>
+      Specify device name. Device name is used to uniquely identify RTS2
+      component. It must be unique among all parts connected to a given
+      <citerefentry><refentrytitle>rts2-centrald</refentrytitle><manvolnum>5</manvolnum></citerefentry>.
+    </para>
+    <para>
+      The best way how to specify device names is through
+      <emphasis>devices</emphasis> configuration file - please see <citerefentry>
+      <refentrytitle>rts2.devices</refentrytitle><manvolnum>5</manvolnum>
+      </citerefentry> for details.
+    </para>  
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>--autosave</option></term>
+  <listitem>
+    <para>
+      Save and load values to given file. Values are auto loaded on device startup, then saved anytime
+      autosave command is issued (or device thinks it is good to save values). Values must be marked with
+      RTS2_VALUE_AUTOSAVE flag to be include in autosave file.
+    </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>--modefile</option> <replaceable class='parameter'>filename</replaceable></term>
+  <listitem>
+    <para>
+      Specify modefile. Modefiles are used to set different device modes.  They
+      contains name of modes, followed by list of variables and desired values.
+      They are used to quickly change between different device modes. Please see
+      <citerefentry><refentrytitle>rts2.modefile</refentrytitle><manvolnum>5</manvolnum></citerefentry>
+      for modefiles description.
+    </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>--valuefile</option></term>
+  <listitem>
+    <para>
+      Load file which specify addional variables the component should create.
+      Value file format is similar to the .ini template files, please see
+      <citerefentry><refentrytitle>rts2.valuefile</refentrytitle><manvolnum>5</manvolnum></citerefentry>
+      for details.
+    </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>--server</option> <replaceable class='parameter'>hostname<arg choice='opt'>:port</arg></replaceable></term>
+  <listitem>
+    <para>
+      Specify name of the host and possibly port, which runs
+      <citerefentry><refentrytitle>rts2-centrald</refentrytitle><manvolnum>1</manvolnum></citerefentry>.
+      This option is needed only for setups that use multiple computers.
+      Its default is localhost for hostname and 617 for port number.
+    </para>
+    <para>
+      Multiple servers can be specified. The component then tries to connect to
+      all listed servers, and maintains connection with them.
+    </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>--localhost</option> <replaceable class='parameter'>hostname</replaceable></term>
+  <listitem>
+    <para>
+      Specify localhost name. This options is rarely used when network is
+      not configured properly, and the user cannot change how network is
+      configured. Together with <emphasis>--local-port</emphasis> it can
+      be used to run RTS2 through tunnels.
+    </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>--noauth</option></term>
+  <listitem>
+    <para>
+      Allow device to operate without central server. When run with this
+      option, device will accept unauthorized connections. This is usefull to
+      run standalone device drivers and connect directly to them, without need
+      to authorize against central server.
+    </para>
+    <para>
+      This option makes system less secure.
+    </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>--notcheck</option></term>
+  <listitem>
+    <para>
+      Ignore unset variables. Some variables are marked as required to be
+      not-null before the component is initialized. This is done by modefiles -
+      see
+      <citerefentry><refentrytitle>rts2.modelfiles</refentrytitle><manvolnum>5</manvolnum></citerefentry>
+      for details. If the programme should be run without those check, the
+      <option>--notcheck</option> provides exactly this.
+    </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>--run-as</option> <replaceable class='parameter'>user<arg choice='opt'>.group</arg></replaceable></term>
+  <listitem>
+    <para>
+      Run as specified user. The main program must be than run as superuser.
+      User (and possibly group) is changed right after fork call.
+    </para>
+    <para>
+      This option should specifically be provided for services who do not need
+      access to hardware, and especially any services accesible from outside
+      (e.g.
+      <citerefentry><refentrytitle>rts2-xmlrpcd</refentrytitle><manvolnum>7</manvolnum></citerefentry>).
+      You must make sure that the database is accessible from this user - but
+      you should get a clear warning during initialization if that's not the
+      case.
+    </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>--lock-prefix</option> <replaceable class='parameter'>path to lock file</replaceable></term>
+  <listitem>
+    <para>
+      Specify lock prefix. The default is <emphasis>/var/run/RTS2_</emphasis>. The lock files, which are used to signify that the device is up and running, are device names prefixed with lock prefix.
+    </para>
+    <para>
+      This option is particualarly usefull for non-root installations.
+    </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>--local-port</option> <replaceable class='parameter'>local port</replaceable></term>
+  <listitem>
+    <para>
+      Specify local port, which is opened to listed for incoming TCP-IP
+      traffic. Ussually the port number is not fixed, and is taken from the
+      system, which provides some unused port number. If you for any reason
+      would like to provide port number, you can do it using this option.
+    </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>--autorestart</option> <replaceable class='parameter'>time in seconds</replaceable></term>
+  <listitem>
+    <para>
+      Set wait time for automatic restart of the device. This might be handy if
+      daemon can crash for unknown causes, or causes triggered by actions
+      outside of daemon control (e.g. update of system libraries).
+    </para>
+    <para>
+      By default automatic restarts are disabled. Please use this option with
+      caution, as it might mask crashes which are worth to investigate and fix.
+      Use of this option should be limited either to times when a device driver
+      is being developed and crash for misterious reasons, or when some wait
+      period is needed in case of automatic driver restart after it ceased to
+      work due to hardware failure.
+    </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>-i</option></term>
+  <listitem>
+    <para>
+      Run in interactive mode. Program is not daemonized (does not run in
+      background), so debug messages are printed directly on stdout. This
+      option is particuallary usefull when running application in debugger, as
+      it does not fork into background.
+    </para>
+  </listitem>
+</varlistentry>
+&basicapplist;
+" >
+
+<!ENTITY deviceappdb "
+&dbapp;
+&deviceapp;
+" >
+
+<!ENTITY deviceappdblist "
+&dbapponlylist;
+&deviceapplist;
+" >
+
+
+<!ENTITY clientapp "
+<arg choice='opt'><option>--server</option> <replaceable class='parameter'>central server hostname</replaceable></arg>
+<arg choice='opt'><option>--port</option> <replaceable class='parameter'>port number</replaceable></arg>
+&basicapp;
+" >
+
+<!ENTITY clientapplist "
+<varlistentry>
+  <term><option>--server</option> <replaceable class='parameter'>central server hostname</replaceable></term>
+  <listitem>
+    <para>Change central server location. Defaults to localhost.</para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>--port</option> <replaceable class='parameter'>port number</replaceable></term>
+  <listitem>
+    <para>Change central server port number. Default value is specified with compilation, default is 617.</para>
+  </listitem>
+</varlistentry>
+&basicapplist;
+" >
+
+<!ENTITY selectorlist
+"
+<varlistentry>
+  <term><option>--filter-aliases</option> <replaceable class='parameter'>filter aliases file</replaceable></term>
+  <listitem>
+    <para>
+    </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>--filter-file</option> <replaceable class='parameter'>camera</replaceable>:<replaceable class='parameter'>filter file</replaceable></term>
+  <listitem>
+    <para>
+    </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term><option>--available-filters</option> <replaceable class='parameter'>camera</replaceable> <replaceable class='parameter'>filters</replaceable></term>
+  <listitem>
+    <para>
+    </para>
+  </listitem>
+</varlistentry>
+" >
+
+<!ENTITY infotime "
+<varlistentry>
+  <term>infotime</term>
+  <listitem>
+    <para>
+      Time when the information was correct. As all data are transmitted over
+      TCP/IP and are usually pulled from the client side (e.g.
+      <citerefentry><refentrytitle>rts2-mon</refentrytitle><manvolnum>1</manvolnum></citerefentry>),
+      the displayed values are never actual. The <emphasis>infotime</emphasis>
+      value show when the component values were last updated.
+    </para>
+  </listitem>
+</varlistentry>
+" >  
+
+<!ENTITY localtime "
+<para>
+  All time inputs are specified in YYYY-MM-DDxHH:MM:SS.ss format, where YYYY
+  is for year, MM is for month, DD is for day and HH,MM and SS.ss stands for
+  hours, minutes, seconds and fractions of seconds. If HH, MM or SS.ss are
+  not provided, they are assumed to be 0.
+</para>
+<para>     
+  The x determines, if local time
+  is entered, or UT time is specified. Please be aware that localtime is what your
+  computer thinks as local time, and it can be as well set to UT. The
+  following characters have the following meaning:
+  <variablelist>
+    <varlistentry>
+      <term>L</term>
+      <term>T</term>
+      <term> (space)</term>
+      <listitem>
+        <para>Specify that time is entered in local time.</para>
+      </listitem>
+    </varlistentry>
+    <varlistentry>
+      <term>U</term>
+      <term>G</term>
+      <listitem>
+        <para>Specify that time is entered in UT - univerzal time (Greenwich time, ZULU,..) time.</para>
+      </listitem>
+    </varlistentry>
+  </variablelist>
+</para>
+<para>     
+  As entering times can be confusing, the system always print timezone
+  information. So you can verify if you entered correct time. Consider that
+  your system is set to NZST, which is New Zealand Standard Time (UTC -
+  12:00). Then entering <emphasis>2011-01-12T13:00:00.00</emphasis>
+  corresponds to UT 01:00:00 (on the same day). You can get the same time
+  entering <emphasis>2011-01-12U01:00:00</emphasis> or <emphasis>2011-1-12T1</emphasis>.
+</para>
+<para>
+  You can also use <option>--UT</option>, which switch all time printouts to
+  UT time. This does not affects inputs, but should provide hints if you are
+  unsure to which timezone the computer is set.
+</para>
+" >
+
+<!ENTITY targetnamesexp "
+<para>
+  Target names can include &#37; character, which match any possible string. So
+  if user provide as target name <emphasis>B&#37;</emphasis> all targets beginning
+  with <emphasis>B</emphasis> will be used.
+</para>
+">

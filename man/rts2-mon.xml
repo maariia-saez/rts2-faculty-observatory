@@ -1,0 +1,425 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" [
+
+  <!ENTITY dhfirstname "<firstname>Petr</firstname>">
+  <!ENTITY dhsurname   "<surname>Kubanek</surname>">
+  <!ENTITY dhdate      "<date>2012-03-25</date>">
+  <!ENTITY dhsection   "<manvolnum>1</manvolnum>">
+  <!ENTITY dhemail     "<email>petr@kubanek.net</email>">
+  <!ENTITY dhusername  "Petr Kubanek">
+  <!ENTITY dhpackage   "rts2-mon">
+
+  <!ENTITY % rts2 SYSTEM "rts2.ent">
+  %rts2;
+]>
+
+<refentry>
+  <refentryinfo>
+    <title>&dhpackage;</title>
+    <productname>rts2</productname>
+    <productnumber>&rts2version;</productnumber>
+    &dhdate;
+    <authorgroup>
+      <author>
+        &dhfirstname;
+        &dhsurname;
+	<contrib>Wrote most of the RTS2 package.</contrib>
+	<address>
+          &dhemail;
+	</address>
+      </author>
+    </authorgroup>
+    <copyright>
+      <year>2007,2010</year>
+      <holder>&dhusername;</holder>
+    </copyright>
+    &legal;
+  </refentryinfo>
+  <refmeta>
+    <refentrytitle>&dhpackage;</refentrytitle>
+    &dhsection;
+  </refmeta>
+  <refnamediv>
+    <refname>&dhpackage;</refname>
+    <refpurpose>Allow interactive control of the RTS2 system.</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>&dhpackage;</command>
+      <arg choice="opt"><option>--command <replaceable>device</replaceable>.<replaceable>command</replaceable></option></arg>
+      <arg choice="opt"><option>-r <replaceable>refresh rate</replaceable></option></arg>
+      <arg choice="opt"><option>-c</option></arg>
+      &clientapp;
+    </cmdsynopsis>
+
+    &helpsynopsis;
+
+  </refsynopsisdiv>
+
+  <refsect1 id="description">
+    <title>DESCRIPTION</title>
+    <para>
+      <command>rts2-mon</command> is n-curses based tool for manipulating
+      devices available in RTS2 system. You can read and modify variables of
+      every device connected to the system. It allows fully interactive work with the system.
+    </para>
+    <para>
+      You cannot take images with <command>rts2-mon</command>. To take images,
+      please see <command>rts2-focusc</command>,
+      <command>rts2-xfocusc</command> or <command>rts2-scriptexec</command>
+      commands. To take images autonomously, use either
+      <command>rts2-executor</command> or <command>rts2-scriptor</command>.
+    </para>
+    <para>
+      Please read at least the <link linkend="variables">variables format</link>
+      section, to understand how the arrays are displayed.
+    </para>
+  </refsect1>
+  <refsect1 id="basic_operation">
+    <title>BASIC OPERATION</title>
+    <para>
+      To leave <command>rts2-mon</command>, use F10 or ctrl+c combination.
+    </para>
+
+    <para>
+      Probably the most basic operation is to switch system states. Please
+      press F2, F3, or F4 keys to switch states. To switch system to on, you
+      will press F4. When system is in on, it is observing.
+    </para>
+
+    <para>
+      To switch system to off, please press F2 key. To switch to standby, use
+      F3 keys. Use off state when you are sure you will not observe, or use F3
+      key and standby mode when you think you might be able to observe later
+      tonight.
+    </para>
+
+    <para>
+      After you press key to change state, small confirmation window will
+      appear. Use left and right keys and enter key to confirm your selection.
+      You most probably would like to press enter key to confirm selected yes.
+    </para>
+
+    <para>
+      You can also change various values. Use keys (up and down), tabulator key
+      to select a value. Writable values are marked with W in front of the value
+      name. You can only change writable values. Once you highlight value, hit
+      enter key to change it. Confirm the change with enter, or cancel it with
+      ESC key.
+    </para>
+
+  </refsect1>
+  <refsect1>
+    <title>RTS2-MON SCREEN</title>
+
+    <para>
+      When you run <command>rts2-mon</command>, screen is divided into four principal
+      areas - menu bar, device list and status display, RTS2 messages
+      space and status bar at bottom.
+    </para>
+
+    <para>
+      Standart screen layout will display following elements:
+
+      <variablelist>
+        <varlistentry>
+	  <term>menu</term>
+	  <listitem>
+	    <para>
+	      This is the uppermost line of the screen. You can enter menu
+	      pressing F9 key, and exit it pressing ESC key. In menu you will
+	      find generic command to switch RTS2 to off, standby and on
+	      states.
+	    </para>
+	  </listitem>
+	</varlistentry>
+        <varlistentry>
+	  <term>device listing</term>
+	  <listitem>
+	    <para>
+	      Devices are listed in left part of the screen. You can use up and
+	      down arrows to move between devices. Once you have selected
+	      device which you want, press TAB key to move to the variable
+	      listing.
+	    </para>
+	  </listitem>
+	</varlistentry>
+        <varlistentry>
+	  <term>variable list</term>
+	  <listitem>
+	    <para>
+	      The center and right part of the screen holds information about
+	      RTS2 device variables, or device states. For central server, list
+	      of devices and their states will be shown. "status" shows state
+	      of all available devices.
+	    </para>
+	    <para>
+	      Variables which can be changed have W (for Writable) before their
+	      name. Selecting them with movement keys and pressing enter (or
+	      F6) shows a dialog box, where user can edit their value.
+	    </para>
+	    <para>
+	      Variables which will be recorded to FITS headers of acquired
+	      files are on color terminals show in blue color. Variables which
+	      will not be recorded are show in black.
+	    </para>
+	  </listitem>
+	</varlistentry>
+        <varlistentry>
+	  <term>log window</term>
+	  <listitem>
+	    <para>
+	      Log window display messages, as they are passed through RTS2
+	      system. Those messages include debug messages. To change filter
+	      which governs which message will be displayed, go to the menu and
+	      select "Debug" option.
+	    </para>
+	  </listitem>
+	</varlistentry>
+        <varlistentry>
+	  <term>status bar</term>
+	  <listitem>
+	    <para>
+	      Status bar display current system status. Left is system state
+	      (on, standby or off and substate - day, night, etc..), right is
+	      current <acronym>UT</acronym>.
+	    </para>
+	  </listitem>
+	</varlistentry>
+      </variablelist>
+    </para>
+
+  </refsect1>
+  <refsect1 id="keys">
+    <title>KEYS</title>
+
+     <refsect2>
+      <title>State switching keys</title>
+    
+      <para>
+	RTS2 state can be switched by F2, F3 and F4 keys. After you press that
+	key, message dialog with question to confirm state change appear. You
+	can use arrow keys to change answer, and confirm the message box by
+	pressing enter. If you choose Yes as answer to question, RTS2 state
+	will be changed.
+      </para>
+
+      <para>
+	For detailed discussions of various states, please see
+	<citerefentry><refentrytitle>rts2</refentrytitle><manvolnum>7</manvolnum></citerefentry>.
+      </para>
+
+      <variablelist>
+	<varlistentry>
+	  <term>
+	    <option>F2</option>
+	  </term>
+	  <listitem>
+	    <para>Switch RTS2 to off state.</para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>F3</option>
+	  </term>
+	  <listitem>
+	    <para>Switch RTS2 to standby state.</para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>F4</option>
+	  </term>
+	  <listitem>
+	    <para>Switch RTS2 to on state.</para>
+	  </listitem>
+	</varlistentry>
+      </variablelist>
+    </refsect2>
+
+    <refsect2>
+      <title>Movement keys</title>
+
+      <para>
+        As text which should be displayed in <command>rts2-mon</command> windows must
+        not necessary fit inside windows where it should be
+	displayed, following keys can be used to shift text.
+      </para>
+
+      <variablelist>
+        <varlistentry>
+	  <term>
+	    <option>up</option>
+	    <option>down</option>
+	  </term>
+	  <listitem>
+	    <para>Move focus on selection list up or down.</para>
+	  </listitem>
+	</varlistentry>
+        <varlistentry>
+	  <term>
+	    <option>home</option>
+	  </term>
+	  <listitem>
+	    <para>Move focus on selection list to first entry.</para>
+	  </listitem>
+	</varlistentry>
+        <varlistentry>
+	  <term>
+	    <option>end</option>
+	  </term>
+	  <listitem>
+	    <para>Move focus on selection list to last entry.</para>
+	  </listitem>
+	</varlistentry>
+        <varlistentry>
+	  <term>
+	    <option>left, right (arrows)</option>
+	  </term>
+	  <listitem>
+	    <para>Shift text left or right, so part which cannot be visible becomes visible.</para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>tab</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Moves active window. Active window is marked with black window
+	      border. You can switch between devices, values and log area.
+	    </para>
+	  </listitem>
+	</varlistentry>
+      </variablelist>
+    </refsect2>
+
+    <refsect2>
+      <title>rts2-mon functions keys</title>
+    
+      <para>
+	Those are keys, which execute <command>rts2-mon</command> functions.
+      </para>
+
+      <variablelist>
+	<varlistentry>
+	  <term>
+	    <option>F5</option>
+	  </term>
+	  <listitem>
+	    <para>Refresh display.</para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>Enter</option>
+	    <option>F6</option>
+	  </term>
+	  <listitem>
+	    <para>
+	      Edit variable when variable window is active. You can change only
+	      variables with W (as Writable) before variable name. If you are
+	      in device selection window, hit tabulator key to move to activate
+	      value window.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>F9</option>
+	  </term>
+	  <listitem>
+	    <para>Enter menu.</para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>
+	    <option>F10</option>
+	  </term>
+	  <listitem>
+	    <para>Exit from <command>rts2-mon</command>.</para>
+	  </listitem>
+	</varlistentry>
+      </variablelist>
+    </refsect2>
+
+  </refsect1>
+  <refsect1 id="variables">
+    <title>Variables display</title>
+    <variablelist>
+      <varlistentry>
+        <term>
+	  <option>Arrays</option>
+	</term>
+	<listitem>
+	  <para>
+	    For arrays variables, the monitor window shows the following
+	    values: mean, size (number of elements), minimum, maximum, median
+	    and standard deviation.
+	  </para>
+	  <para>
+	    The full content of the array will be displayed when
+	    <emphasis>Enter</emphasis> key is pressed while the variable is
+	    selected.
+	  </para>
+	</listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+  <refsect1 id="options">
+    <title>OPTIONS</title>
+
+    &optiongnu;
+
+    <variablelist>
+      <varlistentry>
+        <term><option>--command <replaceable>device</replaceable>.<replaceable>command</replaceable></option></term>
+	<listitem>
+	  <para>
+	    Allows user to specify commands to send to connected device(s) once
+	    they will become available.  Can be used for example to send
+	    reset_next to all connected weather devices.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-r <replaceable>refresh rate</replaceable></option></term>
+	<listitem>
+	  <para>
+	    Specify refresh rate in seconds. This parameter is usefull if the
+	    user wish to limit refreshing of the devices. Defaults to 0.1, e.g.
+	    monitor will try to referesh data (and user screen) 10 times per
+	    second. Should by used when user wish to limit amount of transmitted data.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>	
+        <term><option>-c</option></term>
+        <listitem>
+          <para>Switch off colors. Usefull for terminals which have problems with colors.</para>
+        </listitem>
+      </varlistentry>
+      &clientapplist;
+    </variablelist>
+  </refsect1>
+  <refsect1>
+    <title>SEE ALSO</title>
+
+    <para>
+      <citerefentry>
+        <refentrytitle>rts2</refentrytitle>
+	<manvolnum>7</manvolnum>
+      </citerefentry>,
+      <citerefentry>
+        <refentrytitle>rts2.ini</refentrytitle>
+	<manvolnum>5</manvolnum>
+      </citerefentry>,
+      <citerefentry>
+        <refentrytitle>rts2-horizon</refentrytitle>
+	<manvolnum>1</manvolnum>
+      </citerefentry>
+    </para>
+
+  </refsect1>
+</refentry>

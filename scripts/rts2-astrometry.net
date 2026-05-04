@@ -1,0 +1,245 @@
+#!/usr/bin/env python
+#
+# Astrometry routines. Works with the Astrometry.net package.
+#
+# (C) 2011-2014 Petr Kubanek, Institute of Physics <kubanek@fzu.cz>
+#
+# This script integrates astrometry routines for use within RTS2 as a
+# script, or within RTS2-F for scripting from tcsh.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+try:
+	import astropy.io.fits as pyfits
+except ImportError:
+	import pyfits
+import rts2
+import rts2.astrometry
+import rts2.dms
+import rts2.libnova
+
+import posixpath
+import math
+import sys
+from optparse import OptionParser
+
+def run_on_image(fn, verbose=False, blind=False, noblind=False, multiwcs='', wcs_keys=None, wcs_scale=1.0, radius=5, scale_relative_error=0.05, timeout=None, print_results=True, x_offset=None, y_offset=None, odir=None, bashrc=None, center=False, extension=None, downsample=None, use_sextractor=False, order=None, pixscale=None):
+	c = rts2.Rts2Comm()
+
+	# Guess correct path to solve-field and sextractor
+	astrometry_bin = None
+	sextractor_bin = None
+
+	for _ in ['/usr/local/astrometry/bin', '/usr/astrometry/bin', '/opt/local/astrometry/bin', './astrometry/bin']:
+		if posixpath.exists(posixpath.join(_, 'solve-field')):
+			astrometry_bin = _
+			break
+	if astrometry_bin is None:
+		c.log('W', 'cannot find Astrometry.Net binary')
+		return 1
+
+	if use_sextractor:
+		for _ in ['/usr/local/bin', '/usr/bin', '/opt/local/bin', './bin', '.']:
+			for __ in ['sex', 'sextractor']:
+				if posixpath.exists(posixpath.join(_, __)):
+					sextractor_bin = posixpath.join(_, __)
+					break
+			if sextractor_bin:
+				break
+		if sextractor_bin is None:
+			c.log('W', 'cannot find SExtractor binary')
+			return 1
+
+	a = rts2.astrometry.AstrometryScript(fn, scale_relative_error=scale_relative_error, odir=odir, astrometry_bin=astrometry_bin, use_sextractor=use_sextractor, sextractor_bin=sextractor_bin)
+	c.tempentry(a.odir[4:])
+
+	ff=pyfits.open(fn,'readonly')
+
+	ra = dec = scale = None
+
+	if not(blind):
+		if wcs_keys is not None:
+			ra=ff[0].header[wcs_keys[0]]
+			dec=ff[0].header[wcs_keys[1]]
+			try:
+				scale=abs(float(ff[0].header[wcs_keys[2]])) * wcs_scale
+			except IndexError,ie:
+				pass
+
+			# parse WCS keys
+			try:
+				ra = float(ra)
+			except ValueError:
+				ra = rts2.dms.parse(ra) * 15.0
+			try:
+				dec = float(dec)
+			except ValueError:
+				dec = rts2.dms.parse(dec)
+		else:
+			try:
+				ra=ff[0].header['CRVAL1' + multiwcs]
+				dec=ff[0].header['CRVAL2' + multiwcs]
+			except KeyError,ke:
+				if verbose:
+					import traceback
+					traceback.print_exc()
+				ra = dec = None
+				c.log('W','cannot retrieve RA DEC. Verify that the FITS header contains correct keywords (CRVAL1{0} and CRVAL2{0})'.format(multiwcs))
+
+			for k in ['CDELT1' + multiwcs,'CD1_1' + multiwcs]:
+				try:
+					scale = abs(float(ff[0].header[k]) * 3600.0)
+					break
+				except KeyError,ke:
+					pass
+
+
+        if pixscale is not None:
+                scale = pixscale
+
+	object = None
+
+	try:
+		object=ff[0].header['OBJECT']
+	except KeyError,ke:
+		pass
+
+	ff.close()
+
+	ret=a.run(replace=True,verbose=verbose,extension=extension,center=center,downsample=downsample, order=order) if blind else a.run(scale=scale, ra=ra, dec=dec, radius=radius, replace=True, timeout=timeout, verbose=verbose, extension=extension, center=center, downsample=downsample, order=order)
+
+	if ret and print_results:
+		# script needs to reopen file
+		if odir is None:
+			ff=pyfits.open(fn,'readonly')
+		else:
+			ff=pyfits.open(odir + '/' + fn,'readonly')
+		fh=ff[0].header
+		ff.close()
+
+		raorig=ra
+		decorig=dec
+
+		rastrxy = rts2.astrometry.xy2wcs(fh['NAXIS1']/2.0, fh['NAXIS2']/2.0, fh)
+
+		#rastrxy=[float(ret[0])*15.0,float(ret[1])]
+
+		x_o = x_offset if x_offset is not None else 0
+		y_o = y_offset if y_offset is not None else 0
+
+		c.doubleValue('real_ra','[hours] image RA as calculated from astrometry',rastrxy[0],rts2.scriptcomm.DT_RA)
+		c.doubleValue('real_dec','[deg] image dec as calculated from astrometry',rastrxy[1],rts2.scriptcomm.DT_DEC)
+
+		if raorig is not None and decorig is not None:
+			err = rts2.libnova.angular_separation(raorig, decorig, rastrxy[0] + x_o/3600.0, rastrxy[1] + y_o/3600.0)
+
+			# The code expects verbatim coordinate differences
+			ra_err = (raorig-rastrxy[0])-x_o/3600.0
+			dec_err = decorig-rastrxy[1]-y_o/3600.0
+
+			print "corrwerr 1 {0:.10f} {1:.10f} {2:.10f} {3:.10f} {4:.10f}".format(rastrxy[0], rastrxy[1], ra_err, dec_err, err)
+
+			c.doubleValue('tra','[hours] telescope ra',raorig,rts2.scriptcomm.DT_RA)
+			c.doubleValue('tdec','[deg] telescope dec',decorig,rts2.scriptcomm.DT_DEC)
+
+			c.doubleValue('ora','[arcdeg] offsets ra as calculated from astrometry',ra_err * 3600.0,rts2.scriptcomm.DT_RA)
+			c.doubleValue('odec','[arcdeg] offsets dec as calculated from astrometry',dec_err * 3600.0,rts2.scriptcomm.DT_DEC)
+                else:
+                        # Have to send fake correction as connimgproc.cpp expects it for solved image
+			print "corrwerr 1 {0:.10f} {1:.10f} 0.0 0.0 0.0".format(rastrxy[0], rastrxy[1])
+
+		if x_offset is not None:
+			c.doubleValue('xoffs', '[arcsec] x offset', x_offset)
+		if y_offset is not None:
+			c.doubleValue('yoffs', '[arcsec] y offset', x_offset)
+
+		c.stringValue('object','astrometry object',object)
+
+	if ret is not None:
+		if bashrc is not None:
+			rcfile = open(bashrc, 'w+')
+			rcfile.write('export ra_err={0}\nexport dec_err={1}\nexport err={2}'.format(ra_err, dec_err, err))
+			rcfile.close()
+		return 0
+	return 1
+
+parser = OptionParser(usage="""rts2-astrometry [--multi-wcs <key>] [--wcs-keys 'RA,DEC,scale'] [--wcs-scale (arcdeg|arcmin|arcsec)] [--blind] [--radius <deg>] [--scale-error <percents>] [--tmp-dir <directory>] [--timeout <seconds>] [--verbose] [--quiet] [--xoffset <pixels>] [--yoffset <pixels>] [--bashrc <file>]
+
+Calls solve-field from astrometry.net package on given files.
+If input file has multiple WCS with one extension holding telescope WCS, please use --multi-wcs <suffix> option.
+For solving files with RTS2 de-factor standart TELRA,TELDEC and XPLATE keywords, please use:
+
+--wcs-keys 'TELRA,TELDEC,XPLATE' --wcs-scale 'arcsec'
+
+""")
+parser.add_option('--multi-wcs', help='Multiple WCS extension', action='store', dest='multiwcs', default='')
+parser.add_option('--wcs-keys', help='WCS keys (RA [arcdeg], DEC [arcdeg], scale [arcdeg]) separated with ","', action='store', dest='wcs_keys', default=None)
+parser.add_option('--wcs-scale', help='Scale for WCS scale keyword (arcdeg, arcmin or arcsec; default to arcsec)', action='store', dest='wcsscale', default=None)
+parser.add_option('--blind', help='Blind solve', action='store_true', dest='blind', default=False)
+parser.add_option('--no-blind', help='Do not automatically blind resolve', action='store_true', dest='noblind', default=False)
+parser.add_option('--radius', help='Error radius', action='store', dest='radius', default=5)
+parser.add_option('--scale-error', help='scale error in %', action='store', dest='scale_error', default=5)
+parser.add_option('--tmp-dir', help='temporary directory', action='store', dest='temp_dir', default=None)
+parser.add_option('--timeout', help='Process timeout', action='store', dest='timeout', default=None)
+parser.add_option('--verbose', help='Be verbose, print what the script is doing', action='store_true', dest='verbose', default=False)
+parser.add_option('--quiet', help="don't compute ora, odec,..", action='store_true', dest='quiet', default=False)
+parser.add_option('--xoffset', help="X offset (used in mosaic images)", action='store', dest='x_offset', default=None)
+parser.add_option('--yoffset', help="Y offset (used in mosaic images)", action='store', dest='y_offset', default=None)
+parser.add_option('--center', help="put reference pixel to center", action="store_true", dest="center", default=False)
+parser.add_option('--extension', help="FITS extension to solve", action="store", dest="extension", default=None)
+parser.add_option('-z', help="downsample the image before running source extractions", action="store", dest="downsample", default=None)
+parser.add_option('--bashrc', help="write results into bash export file", action="store", dest="bashrc", default=None)
+parser.add_option('--sextractor', help="use SExtractor", action="store_true", dest="use_sextractor", default=False)
+parser.add_option('--order', help='SIP tweak order', action='store', dest='order', default=None)
+parser.add_option('--pixscale', help='Pixel scale in arcsec', action='store', type='float', dest='pixscale', default=None)
+
+(options,args) = parser.parse_args()
+
+if not(len(args) == 1):
+	print 'Usage: {0} <fits filenames>'.format(sys.argv[0])
+	sys.exit(1)
+
+wcs_keys = None
+
+if options.wcs_keys:
+	wcs_keys = options.wcs_keys.split(',')
+
+if options.timeout is not None:
+	options.timeout = int(options.timeout)
+
+if options.x_offset is not None:
+	options.x_offset = float(options.x_offset)
+
+if options.y_offset is not None:
+	options.y_offset = float(options.y_offset)
+
+wcs_scale = 3600.0
+if options.wcsscale is not None:
+	if options.wcsscale == 'arcdeg':
+		wcs_scale = 3600.0
+	elif options.wcsscale == 'arcmin':
+		wcs_scale = 60.0
+	elif options.wcsscale == 'arcsec':
+		wcs_scale = 1
+	else:
+		print 'Invalid WCS scale - expected arcdeg, arcmin or arcsec, received {0}'.format(options.wcsscale)
+		sys.exit(2)
+
+ret = 0
+
+for x in args:
+	ret += run_on_image(x, verbose=options.verbose, blind=options.blind, noblind=options.noblind, multiwcs=options.multiwcs, wcs_keys=wcs_keys, wcs_scale=wcs_scale, radius=float(options.radius), scale_relative_error=float(options.scale_error) / 100.0, timeout=options.timeout, print_results=not(options.quiet), x_offset=options.x_offset, y_offset=options.y_offset, odir=options.temp_dir, bashrc=options.bashrc, center=options.center, extension=options.extension, downsample=options.downsample, use_sextractor=options.use_sextractor, order=options.order, pixscale=options.pixscale)
+
+sys.exit(ret)

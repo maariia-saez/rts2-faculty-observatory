@@ -1,0 +1,20 @@
+camd		CAMera Daemons
+dome		Dome (roof) control
+grb		grb receiving - rts2-grbd
+plan		planning & execution & image processing - rts2-selector, rts2-executor, rts2-imgproc
+monitor		Monitoring client
+teld		TELescope Daemons
+utils		rts2block.cpp, rts2device.cpp, devser.c, devdem.c, hms.h, ..
+writers		writers for writing images from internal to external format;
+		support stream processing
+phot		Photocounters daemon
+focusc		GUI focuser etc..
+focusd		Focuser
+bckimages	Thinks for image archive management
+sensors		Various sensor devices
+indi		INDI (KStars) device driver
+logger		logd and logger (client)
+xmlrpc		xmlrpc daemon
+scheduler       advanced schedulers for RTS2 night and longer runs
+libindi         libraries for indi communication
+stellarium	Stellarium client (allows control of arbitary telescope supported by RTS2)

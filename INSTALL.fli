@@ -1,0 +1,47 @@
+Instructions to install FLI devices
+===================================
+
+For FLI (Finger Lake Instruments inc.) devices, you will need FLI drivers. You
+can get them from RTS2 GitHUb. RTS2 GitHub packages are patched for few know problems
+in official FLI SDK and provides FLIGetSerialNum function.
+
+To get GitHUb version, run:
+
+user@host:~$ git clone https://github.com/RTS2/fliusb
+
+After that, run:
+
+user@host:~$ cd fliusb/fliusb
+user@host:~/fliusb/fliusb$ make
+
+As root, run:
+
+root@host:/home/user/fliusb/fliusb$ mkdir /lib/modules/`uname -r`/misc
+root@host:/home/user/fliusb/fliusb$ cp fliusb.ko /lib/modules/`uname -r`/misc
+root@host:/home/user/fliusb/fliusb$ depmod -a
+root@host:/home/user/fliusb/fliusb$ modprobe fliusb
+
+If dmesg | tail will show something similar to:
+
+FLI USB device found: 'FLI USB MaxCam'
+FLI USB device attached; rdepaddr: 0x82; wrepaddr: 0x02; buffersize: 4096; timeout: 5000
+registered new interface driver fliusb
+fliusb module loaded
+
+then you loaded your driver successfully.
+
+If you like to load driver during each computer boot, add fliusb to
+/etc/modules.
+
+Then as normal user:
+
+user@host:~/fliusb/fliusb$ cd ../libfli
+user@host:~/fliusb/libfli$ make
+
+Then you will need to run ./configure from rts2 with --with-fli option:
+
+user@host:~/fliusb/libfli$ cd ~/rts2
+user@host:~/rts2$ ./configure --without-wcs --with-fli=$HOME/fliusb/libfli
+
+Then run make and (as root) make install. Please see RUN file for details on
+that.

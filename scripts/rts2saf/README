@@ -1,0 +1,90 @@
+Getting started 
+===============
+
+rts2saf package's documentation is generated with Sphinx (see http://sphinx-doc.org)
+
+Quick hands on documentation
+----------------------------
+
+View a slightly behind documentation at:
+
+http://azug.minpet.unibas.ch/~wildi/_build/html/index.html
+
+
+Installation of Sphinx
+----------------------
+
+1) To install Sphinx use:
+
+ Ubuntu     apt-get install python-sphinx
+ openSuSE   zypper in python-sphinx
+
+or
+
+ pip install -U sphinx
+
+2) pip install sphinxcontrib-programoutput
+
+
+Generation and view of the documentation
+----------------------------------------
+
+Execute
+
+ cd ~/rts-2/scripts/rts2saf/sphinx
+ make -f Makefile.sphinx  html
+ 
+and e.g.
+
+ firefox _build/html/modules.html
+ 
+
+to view it or read the latest documents in ./sphinx:
+
+   introduction.rst
+   installation.rst
+   integration.rst
+   real-configuration.rst
+   dummytesting.rst
+   cmdline.rst
+   modules.rst
+   moduleindex.rst
+
+Python unittest
+---------------
+
+Execute in this directory
+
+ ./rts2saf_unittest.py
+
+to see what is missing, mostly it this the path to the SExtractor. If JSON related tests fail,
+just repeat the above command. If failure persists contact the author.
+
+
+Quick hands on analysis
+=======================
+
+After installing all Python packages execute in this directory (where this README is)
+
+either
+
+
+ ./rts2saf_hands_on_examples.sh
+
+or 
+
+ wget http://azug.minpet.unibas.ch/~wildi/rts2saf-test-focus-2013-09-14.tgz
+ tar zxvf rts2saf-test-focus-2013-09-14.tgz
+ wget http://azug.minpet.unibas.ch/~wildi/rts2saf-test-focus-2013-11-10.tgz
+ tar zxvf rts2saf-test-focus-2013-11-10.tgz 
+
+ wget http://azug.minpet.unibas.ch/~wildi/20131011054939-621-RA.fits
+
+ ./rts2saf_analyze.py --base ./samples/ --toc  --fit --ds9
+ ./rts2saf_analyze.py --base ./samples/ --toc  --flux --fit --ds9
+ ./rts2saf_analyze.py --base ./samples/ --toc  --flux --fit --ds9 --assoc
+
+ ./rts2saf_analyze.py --base ./samples_bootes2/  --toc --flux --fit --ds9 --frac 0.2 --assoc
+ ./rts2saf_analyze.py --base ./samples_bootes2/  --toc --flux --fit --ds9 --frac 0.5 --assoc
+ ./rts2saf_analyze.py --base ./samples_bootes2/  --toc --flux --fit --ds9 --frac 0.9 --assoc
+

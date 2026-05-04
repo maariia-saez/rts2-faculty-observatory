@@ -1,0 +1,679 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" [
+
+  <!ENTITY dhfirstname "<firstname>Petr</firstname>">
+  <!ENTITY dhsurname   "<surname>Kubanek</surname>">
+  <!ENTITY dhdate      "<date>2011-01-28</date>">
+  <!ENTITY dhsection   "<manvolnum>7</manvolnum>">
+  <!ENTITY dhemail     "<email>petr@kubanek.net</email>">
+  <!ENTITY dhusername  "Petr Kubanek">
+  <!ENTITY dhpackage   "rts2-selector">
+
+  <!ENTITY % rts2 SYSTEM "rts2.ent">
+  %rts2;
+]>
+
+<refentry>
+  <refentryinfo>
+    <title>&dhpackage;</title>
+    <productname>rts2</productname>
+    <productnumber>&rts2version;</productnumber>
+    &dhdate;
+    <authorgroup>
+      <author>
+        &dhfirstname;
+        &dhsurname;
+	<contrib>Wrote this manual page.</contrib>
+	<address>
+          &dhemail;
+	</address>
+      </author>
+    </authorgroup>
+    <copyright>
+      <year>2011</year>
+      <holder>&fzu;</holder>
+    </copyright>
+    &legal;
+  </refentryinfo>
+  <refmeta>
+    <refentrytitle>&dhpackage;</refentrytitle>
+    &dhsection;
+  </refmeta>
+  <refnamediv>
+    <refname>&dhpackage;</refname>
+    <refpurpose>
+      Component responsible for selecting next observations. It either select
+      next observations from user supplied and filled queues, from plan entries
+      loaded from the database, or selected autonomously from available targets.
+    </refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>&dhpackage;</command>
+      <arg rep='repeat'><option>--add-queue</option> <replaceable class='parameter'>queue name</replaceable></arg>
+      <arg rep='repeat'><option>--filter-aliases</option> <replaceable class='parameter'>filter aliases file</replaceable></arg>
+      <arg rep='repeat'><option>--filter-file</option> <replaceable class='parameter'>camera</replaceable>:<replaceable class='parameter'>filter file</replaceable></arg>
+      <arg><option>--available-filters</option> <replaceable class='parameter'>camera</replaceable> <replaceable class='parameter'>filters</replaceable></arg>
+      &deviceappdb;
+    </cmdsynopsis>
+    <cmdsynopsis>
+      <command>&dhpackage;</command>
+      &help;
+    </cmdsynopsis>  
+
+  </refsynopsisdiv>
+
+  <refsect1 id="description">
+    <title>DESCRIPTION</title>
+
+    <para>
+      <command>&dhpackage;</command> is a RTS2 component, which provides
+      target selection services to the
+      <citerefentry><refentrytitle>rts2-executor</refentrytitle><manvolnum>7</manvolnum></citerefentry>.
+      It suggest which targets shoudl be observed. It is up to
+      <command>rts2-executor</command> (or a script running observations) to
+      take those suggestions into account and observe targets the selector
+      suggests.
+    </para>
+    <para>
+      The <command>&dhpackage;</command> can select next observations from those sources:
+    </para>
+    <variablelist>
+      <varlistentry>
+         <term>queues</term>
+	 <listitem>
+	   <para>
+	     User named list of observations targets. Queues holds a list of
+	     targets, and select among those targets from various criteria. More is described in
+	     <citerefentry><refentrytitle>rts2.queues</refentrytitle><manvolnum>5</manvolnum></citerefentry>.
+	   </para>
+	   <para>
+	     Plan entries, e.g. observations which should be observed on given
+	     time, can be loaded to the queue. Planned observations are special
+	     case of queue selection. Please see
+	     <citerefentry><refentrytitle>rts2-plan</refentrytitle><manvolnum>1</manvolnum></citerefentry>
+	     for description of plan entries management tool.
+	   </para>
+	   <para>
+	     Entries from queues are executed iregardless if the target is
+	     enabled or not. This allows observers to specify what they exactly
+	     want to observe, and do not worry about details that the target is
+	     currently disabled, have low priority or does not fit some
+	     constraints.
+	   </para>
+	 </listitem>
+      </varlistentry>
+      <varlistentry>	 
+	 <term>priority based selection</term>
+	 <listitem>
+	   <para>
+	     This selection runs the autonomous selection. It select among
+	     eneabled targets. The best target is selected as next target. The
+	     best target is target which have highest bonus parameter. Please
+	     see
+	     <citerefentry><refentrytitle>rts2-targetinfo</refentrytitle><manvolnum>1</manvolnum></citerefentry>
+	     for details how to obtain target bonus.
+	   </para>
+	 </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+  <refsect1>
+    <title>Tutorial</title>
+    <para>
+      In this section is described a tutorial how to configure and use
+      <command>&dhpackage;</command>. It assumes three distinct
+      <emphasis>queues</emphasis> will be created, and user wants to observer
+      targets created with
+      <citerefentry><refentrytitle>rts2-newtarget</refentrytitle><manvolnum>1</manvolnum></citerefentry>.
+      The tutorial is indended for new
+      <citerefentry><refentrytitle>rts2</refentrytitle><manvolnum>1</manvolnum></citerefentry>
+      users. Advanced users will find more valuable to read various scheduling
+      related papers produced by RTS2 authors.
+    </para>
+    <para>
+      To start with, a standard installation is assumed. In particular,
+      <emphasis>RTS2</emphasis> must be build with database support, and the
+      database must be up, running and configured for <emphasis>RTS2</emphasis>
+      devices.
+    </para>
+    <refsect2>
+      <title>Target creation</title>
+      <para>
+	New targets can be best created with
+	<citerefentry><refentrytitle>rts2-newtarget</refentrytitle><manvolnum>1</manvolnum></citerefentry>.
+	Other methods, such as direct creation in the <emphasis>RTS2</emphasis>
+	database, will not be discussed in this tutorial.
+      </para>
+      <para>
+        Lets assume we would like to add all Messier objects, from M1 to M104. This can be either done manually:
+	<screen>
+	  &prompt; <userinput><command>rts2-newtarget</command> -f -a M1</userinput>
+	  <computeroutput>Created target #1000 named M1 on J2000.0 coordinates 05:34:31.971 +22:00:52.06 horizontal -04 30 55.25 232 21 28.67</computeroutput>
+	  &prompt; <userinput><command>rts2-newtarget</command> -f -a M2</userinput>
+	  <computeroutput>Created target #1001 named M2 on J2000.0 coordinates 21:33:27.012 -00:49:23.94 horizontal +44 10 33.20 359 34 36.08</computeroutput>
+	  ...
+	  &prompt; <userinput><command>rts2-newtarget</command> -f -a M104</userinput>
+	  <computeroutput>Created target #1103 named M104 on J2000.0 coordinates 12:40:00.000 -11:37:23.00 horizontal -38 12 00.40 115 06 36.48</computeroutput>
+	</screen>
+	or in a bash script:
+	<screen>
+	  &prompt; <userinput><command>for</command> ((x=1;$x &lt; 105; x=$x + 1)); <command>do</command> <command>rts2-newtarget</command> -f -a M$x; <command>done</command></userinput>
+	  <computeroutput>Created target #1000 named M1 on J2000.0 coordinates 05:34:31.971 +22:00:52.06 horizontal -04 30 55.25 232 21 28.67</computeroutput>
+	  <computeroutput>Created target #1001 named M2 on J2000.0 coordinates 21:33:27.012 -00:49:23.94 horizontal +44 10 33.20 359 34 36.08</computeroutput>
+	  ....
+	  <computeroutput>Created target #1103 named M104 on J2000.0 coordinates 12:40:00.000 -11:37:23.00 horizontal -38 12 00.40 115 06 36.48</computeroutput>
+	  &prompt;
+	</screen>
+      </para>
+    </refsect2>
+    <refsect2>
+      <title>Manipulating target - priority, scripting</title>
+      <para>
+	You can skip this section, if you want to rely on the queue scheduling.
+	Please read on, if you want to do queue scheduling with merit function
+	scheduling as backup.
+      </para>
+      <para>
+	In order to assign targets priorities, and enabled them for merit
+	function scheduling,
+	<citerefentry><refentrytitle>rts2-target</refentrytitle><manvolnum>1</manvolnum></citerefentry>
+	should be used. <emphasis>-p</emphasis> option specify target priority,
+	<emphasis>-e</emphasis> option enables target for merit function
+	selection. Multiple targets names can be specified on with a single command call. Either target
+	names or target IDs can be used. 
+	<screen>
+	  &prompt; <userinput><command>rts2-target</command> -p 100 -e M1 M2 M31</userinput>
+	  <computeroutput>2014-03-11T18:10:18.652 CET rts2-target 4 Enable target ID 1000 (M1)</computeroutput>
+	  <computeroutput>2014-03-11T18:10:18.652 CET rts2-target 4 Enable target ID 1001 (M1)</computeroutput>
+	  <computeroutput>2014-03-11T18:10:18.652 CET rts2-target 4 Enable target ID 1030 (M31)</computeroutput>
+	</screen>
+	Please be aware, that the command will not print lines for already enabled targets.
+      </para>
+      <para>
+	Each target can have associated an observing script.
+	<emphasis>RTS2</emphasis> supports various scripts, from a simple on to
+	complex one involving autofocusing and more. Please consult
+	<citerefentry><refentrytitle>rts2.script</refentrytitle><manvolnum>5</manvolnum></citerefentry>
+	for details. Scripts runs on cameras. In the following example, we will
+	assign script to take 5, 10 and 20 second exposure to target 1000:
+	<screen>
+	  &prompt; <userinput><command>rts2-target</command> -c C0 -s 'E 5 E 10 E 20' 100</userinput>
+	</screen>
+      </para>
+    </refsect2>
+    <refsect2>
+      <title>Verifying target settings</title>
+      <para>
+	After targets are prepared for observation, it is good to check that
+	the setting match what one expect. This can be achieved with
+	<citerefentry><refentrytitle>rts2-targetinfo</refentrytitle><manvolnum>1</manvolnum></citerefentry>
+	command. As is the case with
+	<citerefentry><refentrytitle>rts2-target</refentrytitle><manvolnum>1</manvolnum></citerefentry>
+	command, the arguments can be either target names, or target IDs. In
+	case target names and IDs are not know, list of all targets present in the database can be obtained with
+	<citerefentry><refentrytitle>rts2-targetlist</refentrytitle><manvolnum>1</manvolnum></citerefentry> command.
+      </para>
+      <para>
+        To obtain information about target M31, use the following command:
+        <screen>
+	  &prompt; <userinput><command>rts2-targetinfo</command> <option>-e</option> <replaceable>M31</replaceable></userinput>
+	  <computeroutput>ID                  1000</computeroutput>
+	  <computeroutput>SEL_ID              1000</computeroutput>
+	  <computeroutput>NAME                M31</computeroutput>
+	  <computeroutput>TYPE                O</computeroutput>
+	  ....
+	  <computeroutput>24 HOURS OBS        0</computeroutput>
+	  <computeroutput>7 DAYS OBS          0</computeroutput>
+	  <computeroutput>BONUS               192.165909</computeroutput>
+	  <computeroutput>Target is above local horizon.</computeroutput>
+	  <computeroutput>Target is enabled</computeroutput>
+
+	  <computeroutput>IS VISIBLE TONIGHT  yes</computeroutput>
+
+	  <computeroutput>TARGET PRIORITY     100.000000</computeroutput>
+	  <computeroutput>TARGET BONUS        0.000000</computeroutput>
+	  <computeroutput>TARGET BONUS TIME   1970-01-01T01:00:00.000 CET</computeroutput>
+	  <computeroutput>TARGET NEXT OBS.    1970-01-01T01:00:00.000 CET</computeroutput>
+	</screen>
+	The important lines are:
+	<variablelist>
+	  <varlistentry>
+	    <term>BONUS 192.165909</term>
+	    <listitem>
+	      <para>
+		Current value of the target merit function. The value will
+		change over time, as the formula includes various
+		time-dependent values.
+	      </para>
+	    </listitem>
+	  </varlistentry>
+	  <varlistentry>
+	    <term>IS VISIBLE TONIGHT yes</term>
+	    <listitem>
+	      <para>
+		Target is visible during night. Targets which are not visible
+		shall not be, for a obvious reason, observed.
+	      </para>
+	    </listitem>
+	  </varlistentry>
+	  <varlistentry>
+	    <term>TARGET PRIORITY 100.000000</term>
+	    <listitem>
+	      <para>
+	        Priority of the target.
+	      </para>
+	    </listitem>
+	  </varlistentry>
+	  <varlistentry>
+	    <term>TARGET BONUS 100.000000</term>
+	    <listitem>
+	      <para>
+		Target bonus. Target merit function is calculated as a sum of
+		target priority, target bonus and time-dependant part. 
+	      </para>
+	    </listitem>
+	  </varlistentry>
+	</variablelist>  
+      </para>
+    </refsect2>
+    <refsect2>
+      <title>Verifying target selection algorithm</title>
+      <para>
+	After preparing database with targets for night observation, it is
+	handy to verify which targets will be selected with merit function.
+	This can be achived through
+	<citerefentry><refentrytitle>rts2-seltest</refentrytitle><manvolnum>1</manvolnum></citerefentry>
+	command. Best is to run it with --print-possible parameter, as is described bellow:
+	<screen>
+          &prompt; <userinput><command>rts2-seltest</command> <option>--print-possible</option></userinput>
+<computeroutput>List of targets selected for observations. Sort from the one with the highest priority to lowest priorities</computeroutput>
+<computeroutput></computeroutput>
+<computeroutput>   1   329.45   100.00  1000 O 00:42:44.350 +41:16:08.63 -02:25 1.12 +63 23 22.34 265 02 19.56 rising     M31</computeroutput>
+<computeroutput>   2   188.75     0.00  1002 O 21:33:27.012 -00:49:23.94 +00:43 1.46 +43 09 57.42 015 01 35.72 transiting M2</computeroutput>
+        </screen>
+      </para>
+    </refsect2>
+    <refsect2>
+      <title>Adding target to the queue</title>
+      <para>
+	One or multiple targets can be added to the queue with either
+	<command><link linked="cmd:queue">queue</link></command> command, or through
+	<citerefentry><refentrytitle>rts2-httpd</refentrytitle><manvolnum>7</manvolnum></citerefentry>
+	JSON interface, probably with help of the
+	<citerefentry><refentrytitle>rts2-queue</refentrytitle><manvolnum>1</manvolnum></citerefentry>.
+	In this tutorial, we will consider adding target only directly, through
+	<command><link linked="cmd:queue">queue</link></command> executed in
+	<citerefentry><refentrytitle>rts2-mon</refentrytitle><manvolnum>1</manvolnum></citerefentry>.
+      </para>
+      <para>
+	Let's assume we would like to queue in targets 1000, 1001 and 1030 to
+	the manual queue. For this, the following RTS2 command shall be entered
+	in
+	<citerefentry><refentrytitle>rts2-mon</refentrytitle><manvolnum>1</manvolnum></citerefentry>.
+	<screen>
+  	  <userinput><command>queue</command> <option>manual</option> <replaceable>1000</replaceable> <replaceable>1001</replaceable> <replaceable>1030</replaceable></userinput>
+	</screen>
+      </para>
+      <para>
+	Please consult
+	<citerefentry><refentrytitle>rts2-queue</refentrytitle><manvolnum>1</manvolnum></citerefentry>
+	for details.
+      </para>
+    </refsect2>
+    <refsect2>
+      <title>Night time operation</title>
+      <para>
+	During night, selector select targets for observation.
+	<citerefentry><refentrytitle>rts2-executor</refentrytitle><manvolnum>7</manvolnum></citerefentry>
+	then only executes observations selected by Selector.
+      </para>
+      <para>
+	Selector selects observational targets when the system is in
+	<emphasis>night</emphasis> state. That state is active when Sun
+	altitude is bellow <emphasis>night-horizon</emphasis> value specified
+	in
+	<citerefentry><refentrytitle>rts2.ini</refentrytitle><manvolnum>5</manvolnum></citerefentry>.
+      </para>
+      <para>
+	When the system is either in <emphasis>dawn</emphasis> or
+	<emphasis>dusk</emphasis> states, Selector select calibration
+	observations. If Sun altitude is between
+	<emphasis>flat_sun_min</emphasis> and <emphasis>flat_sun_max</emphasis>
+	values, as specified in <citerefentry><refentrytitle>rts2.ini</refentrytitle><manvolnum>5</manvolnum></citerefentry>.
+	Otherwise, system will select <emphasis>dark</emphasis> target.
+      </para>
+      <para>
+	<emphasis>Sky-flat</emphasis> target default to target number
+	<emphasis>2</emphasis>, <emphasis>dark</emphasis> target default to
+	target number <emphasis>1</emphasis>. Those targets are selected by <emphasis>&dhpackage;</emphasis>
+      </para>
+    </refsect2>
+  </refsect1>
+  <refsect1>
+    <title>Operation</title>
+    <para>
+      In order to allow selector operating correctly, the following conditions must be fullfilled:
+    </para>
+    <variablelist>
+      <varlistentry>
+        <term>system state</term>
+	<listitem>
+	  <para>
+	    must be on. Selector will not select next targets, if the system is in off or standby states.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><emphasis>SELECTOR</emphasis>.selector_enabled</term>
+	<listitem>
+	  <para>
+	    shall be turned to true. Otherwise, the selector will select
+	    targets, but will not send them to the executor.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><emphasis>EXECUTOR</emphasis>.selector_next</term>
+	<listitem>
+	  <para>
+	    shall be turned to true. If turned to false,
+	    <citerefentry><refentrytitle>rts2-executor</refentrytitle><manvolnum>7</manvolnum></citerefentry>
+	    will not accept targets provided by <command>&dhpackage;</command>.
+	  </para>
+	</listitem>
+      </varlistentry>
+    </variablelist>
+    <refsect2>
+      <title>Callibration observations</title>
+      <para>
+	In order to prepare callibration frames for a scientific data
+	reduction, <command>&dhpackage;</command> allows two basic callibration
+	observations to be scheduled during dusk and dawn. <emphasis>DARK
+	FRAMES</emphasis> and/or <emphasis>SKYFLATS</emphasis> are acquired as needed.
+      </para>
+      <refsect3>
+        <title>DARK FRAMES</title>
+	<para>
+	</para>
+      </refsect3>
+      <refsect3>
+        <title>SKYFLATS</title>
+	<para>
+	</para>
+      </refsect3>
+    </refsect2>
+  </refsect1>
+  <refsect1>
+    <title>Variables</title>
+    <para>
+      <command>&dhpackage;</command> exposes to system following variables.
+    </para>  
+    <variablelist>
+      &infotime;
+      <varlistentry>
+        <term>next_id</term>
+	<listitem>
+	  <para>
+	    ID of next target which should be observed. This is the target
+	    <command>&dhpackage;</command> suggest for selection.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>next_plan_id</term>
+	<listitem>
+	  <para>
+	    If next target is taken from the scheduler plan, containts its plan
+	    ID. Please see
+	    <citerefentry><refentrytitle>rts2-plan</refentrytitle><manvolnum>1</manvolnum></citerefentry>
+	    for details on plan management.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>next_time</term>
+	<listitem>
+	  <para>
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>interrupt</term>
+	<listitem>
+	  <para>
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>idle_select</term>
+	<listitem>
+	  <para>
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>night_idle_select</term>
+	<listitem>
+	  <para>
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>selector_enabled</term>
+	<listitem>
+	  <para>
+	    Enables selection of the next targets. If false, selector will not
+	    send next target IDs to executor.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>flat_sun_min</term>
+	<listitem>
+	  <para>
+	    Minimal sun altitute for scheduling flats observation. Flat
+	    observations will be ended at evening when Sun altitude drops
+	    bellow this value, and will start at morning once Sun altitude is
+	    above this value. Default value is taken from
+	    <citerefentry><refentrytitle>rts2.ini</refentrytitle><manvolnum>5</manvolnum></citerefentry>
+	    <emphasis>observatory</emphasis> section.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>flat_sun_max</term>
+	<listitem>
+	  <para>
+	    Maximal sun altitute for scheduling flats observation. Flat
+	    observations will start at evening when Sun altitude drops
+	    bellow this value, and will end at morning once Sun altitude is
+	    above this value. Default value is taken from
+	    <citerefentry><refentrytitle>rts2.ini</refentrytitle><manvolnum>5</manvolnum></citerefentry>
+	    <emphasis>observatory</emphasis> section.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>night_disable_type</term>
+	<listitem>
+	  <para>
+	    List types which should be disabled during the night. This is
+	    primarly intendet to disable flats during night. The value is taken from
+	    <citerefentry><refentrytitle>rts2.ini</refentrytitle><manvolnum>5</manvolnum></citerefentry>,
+	    and default to "f F" to disable any targets of the flat type.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>selector_queue</term>
+	<listitem>
+	  <para>
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>last_queue</term>
+	<listitem>
+	  <para>
+	  </para>
+	</listitem>
+      </varlistentry>
+    </variablelist>  
+  </refsect1>
+  <refsect1>
+    <title>Queue variables</title>
+    <para>
+      Each selector queue provides a list of variables, visible in the
+      <citerefentry><refentrytitle>rts2-mon</refentrytitle><manvolnum>1</manvolnum></citerefentry>.
+      Names of those variables start with name of the queue, followed with _
+      and the variable name. So for example, in the system with
+      <emphasis>plan</emphasis> and <emphasis>manual</emphasis> queues, you will be able to find
+      <emphasis>plan_ids</emphasis> and <emphasis>manual_ids</emphasis> variables.
+    </para>
+    <para>
+      Moreover, most of those queue variables are arrays. Entries of the array
+      with the same index correspond to one queue entry.
+    </para>
+    <variablelist>
+      <varlistentry>
+	<term>ids</term>
+	<listitem>
+	  <para>
+            Array of the targets IDs of the queue entries.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+	<term>rep_n</term>
+	<listitem>
+	  <para>
+	    Number of repeats. Any value greater than 0 marks queue entry,
+	    which shall be repeated. Once the entry is observed, its
+	    <emphasis>rep_n</emphasis> is decreased by 1. If the
+	    <emphasis>rep_n</emphasis> value is greater than 0, the observation
+	    is placed at the end of the queue.
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+	<term>rep_separation</term>
+	<listitem>
+	  <para>
+	    Interval between repeated observations. If the observations is
+	    repeated (its <emphasis>rep_n</emphasis> value is greater than 0),
+	    and <emphasis>rep_separation</emphasis> is set, its start time will
+	    be set to <emphasis>rep_separation</emphasis> seconds into future.
+	  </para>
+	</listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+  <refsect1>
+    <title>RTS2 commands</title>
+    <para>
+      This sections describes extra commands available for &dhpackage;. Commands can be best
+      executed from
+      <citerefentry><refentrytitle>rts2-mon</refentrytitle><manvolnum>1</manvolnum></citerefentry>.
+    </para>
+    <refsect2>
+      <title id="cmd:queue">queue &lt;queue name&gt; &lt;targets...&gt;</title>
+      <para>
+	Queue target to the given queue. Queue name must be name of an existing
+	queue. Targets are entered with their target ID. After adding all targets 
+	to the end of the queue, the queue is reordered according to its type -
+	it is therefor possible, that the added targets will not end at the end
+	of the queue.
+      </para>
+      <refsect3>
+        <title>Example</title>
+	<para>
+	  <command>queue</command> <option>manual</option> <replaceable>1000</replaceable> <replaceable>1001</replaceable>
+	</para>
+      </refsect3>
+    </refsect2>
+    <refsect2>
+      <title id="cmd:queue_at">queue_at &lt;queue name&gt; &lt;target start end...&gt;</title>
+      <para>
+        Queue target with start and end times. Those must be specified in ctime (seconds from 1-1-1070).
+      </para>
+      <refsect3>
+        <title>Example</title>
+	<para>
+	  <command>queue_at</command> <option> manual </option> <replaceable>1000</replaceable> 1403538741 14035389741 <replaceable>1001 nan 1403539741</replaceable>
+	</para>
+      </refsect3>
+    </refsect2>
+    <refsect2>
+      <title id="cmd:queue_nrep">queue_nrep &lt;queue name&gt; &lt;target nrep separation...&gt;</title>
+      <para>
+        Queue target with number of repeation and separation between repeats.
+      </para>
+      <refsect3>
+        <title>Example</title>
+	<para>
+	  <command>queue_nrep</command> <option> manual </option> <replaceable>1000 10 nan </replaceable> <replaceable>1001 -1 500</replaceable>
+	</para>
+      </refsect3>
+    </refsect2>
+    <refsect2>
+      <title id="cmd:queue_at_nrep">queue_at_nrep &lt;queue name&gt; &lt;target start end nrep separation...&gt;</title>
+      <para>
+        Queue target with start and end times, numer of repeations and separations between repeations.
+      </para>
+      <refsect3>
+        <title>Example</title>
+	<para>
+	  <command>queue_at_nrep</command> <option> manual </option> <replaceable>1000 1403538741 14035389741 -1 200 </replaceable> <replaceable>1001 nan 1403539741 5 300</replaceable>
+	</para>
+      </refsect3>
+    </refsect2>
+  </refsect1>
+  <refsect1>
+    <title>OPTIONS</title>
+
+    &optiongnu;
+
+    <variablelist>
+      <varlistentry>
+        <term><option>--add-queue</option> <replaceable class='parameter'>queue name</replaceable></term>
+        <listitem>
+          <para>
+	    Adds user queues. The queues are preffered way for user
+	    interactions with the system.
+	  </para>
+        </listitem>
+      </varlistentry>
+      &selectorlist;
+      &deviceappdblist;
+    </variablelist>
+  </refsect1> 
+  <refsect1>
+    <title>SEE ALSO</title>
+
+    <para>
+      <citerefentry>
+        <refentrytitle>rts2</refentrytitle>
+	<manvolnum>1</manvolnum>
+      </citerefentry>,
+      <citerefentry>
+        <refentrytitle>rts2.ini</refentrytitle>
+	<manvolnum>5</manvolnum>
+      </citerefentry>,
+      <citerefentry>
+        <refentrytitle>rts2-plan</refentrytitle>
+	<manvolnum>1</manvolnum>
+      </citerefentry>,
+      <citerefentry>
+        <refentrytitle>rts2.queues</refentrytitle>
+	<manvolnum>5</manvolnum>
+      </citerefentry>,
+      <citerefentry>
+        <refentrytitle>rts2-queue</refentrytitle>
+	<manvolnum>1</manvolnum>
+      </citerefentry>
+    </para>
+
+  </refsect1>
+</refentry>

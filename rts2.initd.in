@@ -1,0 +1,466 @@
+#!/bin/bash
+
+# chkconfig: - 99 35
+# description: Startup scripts for the Remote Telescope System, 2nd Version.
+#
+# pidfile: /var/run/rts2_*
+# config:  /etc/rts2/rts2.ini
+
+# (C) 2005-2010 Petr Kubanek <petr@kubanek.net>
+# (C) 2010 Petr Kubanek, Institute of Physics <kubanek@fzu.cz>
+
+### BEGIN INIT INFO
+# Provides:          rts2
+# Required-Start:    $network $local_fs $remote_fs $syslog postgresql udev
+# Required-Stop:     $network $local_fs $remote_fs $syslog
+# Should-Start:      udev
+# Should-Stop:       udev
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start RTS2 drivers and services
+# Description:       Startup scripts for the Remote Telescope System, 2nd Version.
+### END INIT INFO
+
+#
+# Start/stops rts2 deamons (rts2-centrald, rts2-teld-xxx etc..)
+#
+#
+
+ulimit -c unlimited
+
+#
+# Devices and services which failed to start/stop properly
+#
+failed=""
+
+#
+# Determine which kind of configuration we're using
+#
+system=unknown
+if [ -f /etc/debian_version ]; then
+	system=debian
+elif [ -f /etc/redhat-release ]; then
+	system=redhat
+elif [ -f /etc/SuSE-release ]; then
+	system=suse
+elif [ -f /etc/slackware-version ]; then
+	system=slackware
+elif [ -f /etc/gentoo-release ]; then
+	system=gentoo
+elif [ `uname -o` == 'Cygwin' ]; then
+	system=cygwin
+else
+	echo "$0: Unknown system, please port and contact kubanek@fzu.cz" 1>&2
+	exit 1
+fi
+
+# initialize based on system detecttion
+case $system in
+	debian)
+		. /lib/lsb/init-functions
+		;;
+	gentoo)
+		. /etc/init.d/functions.sh
+		function log_daemon_msg
+		{
+			einfo $*
+		}
+
+		function log_progress_msg
+		{
+			einfo $*
+		}
+
+		function log_warning_msg
+		{
+			ewarn $*
+		}
+
+		function log_failure_msg
+		{
+			eerror $*
+		}
+
+		function log_success_msg
+		{
+			einfo $*
+		}
+
+		function log_end_msg
+		{
+			if [ $1 == 0 ]; then
+				einfo "ok"
+			else
+				eend $1 "failed"
+				failedc=`expr $failedc + 1`
+			fi
+		}
+
+		function wait_pid
+		{
+			if [ $2 == 0 ]; then
+				until [ -s $1 ]; do
+					echo -n "."
+					sleep 1
+				done
+			fi
+			rts2_start_log_end_msg $2 $3
+		}
+		;;
+	slackware|redhat|suse|cygwin)
+		# Source function library.
+		if [ -f /etc/init.d/functions ] ; then
+			. /etc/init.d/functions
+		elif [ -f /etc/rc.d/init.d/functions ] ; then
+			. /etc/rc.d/init.d/functions
+		elif [ $system != 'cygwin' ]; then
+			echo "Missing /etc/*/functions file"
+			exit 0
+		fi;
+		failedc=0
+		function log_daemon_msg
+		{
+			echo -n $* "  ."
+		}
+
+		function log_progress_msg
+		{
+			echo -n $* "  ."
+		}
+
+		function log_warning_msg
+		{
+			echo -n $* "  ."
+		}
+
+		function log_failure_msg
+		{
+			echo -n $* "  ."
+		}
+
+		function log_success_msg
+		{
+			echo -n $* "  ."
+		}
+
+		function log_end_msg
+		{
+			if [ $1 == 0 ]; then
+				echo "ok"
+			else
+				echo "failed"
+				failedc=`expr $failedc + 1`
+			fi
+		}
+
+		function wait_pid
+		{
+			if [ $2 == 0 ]; then
+				until [ -s $1 ]; do
+					echo -n "."
+					sleep 1
+				done
+			fi
+			rts2_start_log_end_msg $2 $3
+		}
+
+		function daemon
+		{
+			$*
+		}
+
+		function killproc
+		{
+			kill $1
+		}
+		;;
+esac
+
+CENTRALD_FILE=@CONFDIR@/rts2/centrald
+DEVICE_CONFIG=@CONFDIR@/rts2/devices
+SERVICE_CONFIG=@CONFDIR@/rts2/services
+RTS2_BIN_PREFIX=@prefix@/bin
+RTS2_PID_PREFIX=@LOCK_PREFIX@
+RTS2_LOG=@LOG_FILE@
+
+rts2_log_daemon_msg()
+{
+	log_daemon_msg $*
+	echo `date +'%Y-%m-%dT%H:%M:%S %Z'` '===<<<<<' $* >>$RTS2_LOG
+}
+
+rts2_start_log_end_msg()
+{
+	if [ $1 -eq 0 ]; then
+		log_success_msg "Started RTS2 $2"
+		echo `date +'%Y-%m-%dT%H:%M:%S %Z'` '===>>> ok' $2 >>$RTS2_LOG
+	elif [ $1 -eq 1 ]; then
+		log_warning_msg "RTS2 $2 already running"
+		echo `date +'%Y-%m-%dT%H:%M:%S %Z'` '===>>> already running' $2 >>$RTS2_LOG
+	else
+		log_failure_msg "Cannot start $2"
+		echo `date +'%Y-%m-%dT%H:%M:%S %Z'` '===>>> failed' $2 >>$RTS2_LOG
+		failed="$failed $2"
+	fi
+}
+
+rts2_stop_log_end_msg()
+{
+	if [ $1 == 0 ]; then
+		log_success_msg "Stopping RTS2 $2"
+		echo `date +'%Y-%m-%dT%H:%M:%S %Z'` '===>>> ok' $2 >>$RTS2_LOG
+	elif [ $1 == 1 ]; then
+		log_warning_msg "RTS2 $2 already stopped"
+		echo `date +'%Y-%m-%dT%H:%M:%S %Z'` '===>>> already stopped' $2 >>$RTS2_LOG
+	else
+		log_failure_msg "Cannot stop $2"
+		echo `date +'%Y-%m-%dT%H:%M:%S %Z'` '===>>> failed' $2 >>$RTS2_LOG
+		failed="$failed $2"
+	fi
+}
+
+rts2_start()
+{
+	rts2_log_daemon_msg "Starting RTS2"
+	grep '^centrald' $CENTRALD_FILE | while read centrald centrald_port centrald_options; do
+		if [ "x${centrald_port}" == "x" ]; then
+			centrald_port=@CENTRALD_PORT@
+		else
+			centrald_options="--local-port $centrald_port $centrald_options"
+		fi
+		case $system in
+			debian)
+				start-stop-daemon --start --pidfile ${RTS2_PID_PREFIX}centrald_${centrald_port} --exec $RTS2_BIN_PREFIX/rts2-centrald -- $centrald_options >>$RTS2_LOG 2>&1
+				rts2_start_log_end_msg $? "rts2-centrald $centrald_options" "centrald daemon on port $centrald_port"
+				;;
+			gentoo)
+				busybox start-stop-daemon --start --pidfile ${RTS2_PID_PREFIX}centrald_${centrald_port} --exec $RTS2_BIN_PREFIX/rts2-centrald -- $centrald_options >>$RTS2_LOG 2>&1
+				rts2_start_log_end_msg $? "rts2-centrald $centrald_options" "centrald daemon on port $centrald_port"
+				;;
+			redhat|suse|slackware|cygwin)
+				daemon $RTS2_BIN_PREFIX/rts2-centrald $centrald_options >>$RTS2_LOG 2>&1
+				rts2_start_log_end_msg $? "rts2-centrald $centrald_options" "centrald daemon on port $centrald_port"
+				;;
+		esac
+	done
+	CENTRALD_OPTIONS=`grep '^-' $CENTRALD_FILE 2>/dev/null`
+	while read device type device_name options; do
+		case $system in
+			debian)
+				# some devices do not like to have device name on command line
+				if [ "x$device_name" == "x-" ]; then
+					start-stop-daemon --start --pidfile ${RTS2_PID_PREFIX}${device_name} --exec $RTS2_BIN_PREFIX/rts2-$device-$type -- $options $CENTRALD_OPTIONS >>$RTS2_LOG 2>&1 
+				else
+					start-stop-daemon --start --pidfile ${RTS2_PID_PREFIX}${device_name} --exec $RTS2_BIN_PREFIX/rts2-$device-$type -- $options $CENTRALD_OPTIONS -d $device_name >>$RTS2_LOG 2>&1
+				fi 
+				rts2_start_log_end_msg $? $device_name "$device_name"
+				;;
+			gentoo)
+				# some devices do not like to have device name on command line
+				if [ "x$device_name" == "x-" ]; then
+					busybox start-stop-daemon --start --pidfile ${RTS2_PID_PREFIX}${device_name} --exec $RTS2_BIN_PREFIX/rts2-$device-$type -- $options $CENTRALD_OPTIONS >>$RTS2_LOG 2>&1 
+				else
+					busybox start-stop-daemon --start --pidfile ${RTS2_PID_PREFIX}${device_name} --exec $RTS2_BIN_PREFIX/rts2-$device-$type -- $options $CENTRALD_OPTIONS -d $device_name >>$RTS2_LOG 2>&1
+				fi 
+				rts2_start_log_end_msg $? $device_name "$device_name"
+				;;
+			redhat|suse|slackware|cygwin)
+				if [ "x$device_name" == "x-" ]; then
+					daemon $RTS2_BIN_PREFIX/rts2-$device-$type $options $CENTRALD_OPTIONS >>$RTS2_LOG 2>&1
+				else
+					daemon $RTS2_BIN_PREFIX/rts2-$device-$type $options $CENTRALD_OPTIONS -d $device_name >>$RTS2_LOG 2>&1
+				fi
+				rts2_start_log_end_msg $? $device_name "$device_name"
+				wait_pid ${RTS2_PID_PREFIX}${device_name} $? $device_name
+				;;
+		esac
+	done < <(cat $DEVICE_CONFIG | sed -e 's/#.*$//' | egrep -v '^\s*$')
+	while read service service_name options; do
+		case $system in
+			debian)
+				start-stop-daemon --start --pidfile ${RTS2_PID_PREFIX}${service_name} --exec $RTS2_BIN_PREFIX/rts2-$service -- $options $CENTRALD_OPTIONS -d $service_name >>$RTS2_LOG 2>&1
+				rts2_start_log_end_msg $? $service_name "$service_name"
+				;;
+			gentoo)
+				busybox start-stop-daemon --start --pidfile ${RTS2_PID_PREFIX}${service_name} --exec $RTS2_BIN_PREFIX/rts2-$service -- $options $CENTRALD_OPTIONS -d $service_name >>$RTS2_LOG 2>&1
+				rts2_start_log_end_msg $? $service_name "$service_name"
+				;;
+			redhat|suse|slackware|cygwin)
+				daemon $RTS2_BIN_PREFIX/rts2-$service $options $CENTRALD_OPTIONS -d $service_name >>$RTS2_LOG 2>&1
+				rts2_start_log_end_msg $? $service_name "$service_name"
+				wait_pid ${RTS2_PID_PREFIX}${service_name} $? $service_name
+				;;
+		esac
+	done < <(cat $SERVICE_CONFIG | sed -e 's/#.*$//' | egrep -v '^\s*$')
+	if [ "x$failed" = "x" ]; then
+		log_daemon_msg "RTS2 start"
+		log_end_msg 0
+	else
+		log_failure_msg "Failed to start $failed"
+		log_daemon_msg "RTS2 start"
+		log_end_msg 1
+	fi
+}
+
+rts2_stop_devices()
+{
+	while read device type device_name options; do
+		case $system in
+			debian)
+				if [ -e ${RTS2_PID_PREFIX}${device_name} ]; then
+					start-stop-daemon --stop --pidfile ${RTS2_PID_PREFIX}${device_name} >>$RTS2_LOG 2>&1
+					rts2_stop_log_end_msg $? $device_name
+				fi
+				;;
+			gentoo)
+				if [ -e ${RTS2_PID_PREFIX}${device_name} ]; then
+					busybox start-stop-daemon --stop --pidfile ${RTS2_PID_PREFIX}${device_name} >>$RTS2_LOG 2>&1
+					rts2_stop_log_end_msg $? $device_name
+				fi
+				;;
+			redhat|suse|slackware|cygwin)
+				if [ -e ${RTS2_PID_PREFIX}${device_name} ]; then
+					killproc `head -n 1 ${RTS2_PID_PREFIX}${device_name}` >>$RTS2_LOG 2>&1
+					rts2_stop_log_end_msg $? $device_name
+					rm -f ${RTS2_PID_PREFIX}${device_name}
+				fi
+				;;
+		esac
+	done < <(cat $DEVICE_CONFIG | sed -e 's/#.*$//' | egrep -v '^\s*$')
+}
+
+rts2_stop_services()
+{
+	while read service service_name options; do
+		case $system in
+			debian)
+				if [ -e ${RTS2_PID_PREFIX}$service_name ]; then
+					start-stop-daemon --stop --pidfile ${RTS2_PID_PREFIX}${service_name} >>$RTS2_LOG 2>&1
+					rts2_stop_log_end_msg $? $service_name
+				fi
+				;;
+			gentoo)
+				if [ -e ${RTS2_PID_PREFIX}$service_name ]; then
+					busybox start-stop-daemon --stop --pidfile ${RTS2_PID_PREFIX}${service_name} >>$RTS2_LOG 2>&1
+					rts2_stop_log_end_msg $? $service_name
+				fi
+				;;
+			redhat|suse|slackware|cygwin)
+				if [ -s ${RTS2_PID_PREFIX}$service_name ]; then
+					killproc `head -n 1 ${RTS2_PID_PREFIX}$service_name` >>$RTS2_LOG 2>&1
+					rts2_stop_log_end_msg $? $service_name
+					rm -f ${RTS2_PID_PREFIX}$service_name
+				fi
+				;;
+		esac
+	done < <(cat $SERVICE_CONFIG | sed -e 's/#.*$//' | egrep -v '^\s*$')
+}
+
+rts2_stop()
+{
+	rts2_log_daemon_msg "Stopping RTS2"
+	rts2_stop_services
+	rts2_stop_devices
+	if grep '^centrald' $CENTRALD_FILE 2>&1 > /dev/null; then
+		for cf in ${RTS2_PID_PREFIX}centrald_*; do
+		  	case $system in
+				debian)
+					start-stop-daemon --stop --pidfile $cf >>$RTS2_LOG 2>&1
+					rts2_stop_log_end_msg $? rts2-centrald
+					;;
+				gentoo)
+					busybox start-stop-daemon --stop --pidfile $cf >>$RTS2_LOG 2>&1
+					rts2_stop_log_end_msg $? rts2-centrald
+					;;
+				redhat|suse|slackware|cygwin)
+					if [ -s $cf ]; then
+						killproc `head -n 1 $cf` >>$RTS2_LOG 2>&1
+						rts2_stop_log_end_msg $? rts2-centrald
+						rm -f $cf
+					fi
+					;;
+			esac
+		done
+	fi
+	if [ -z $failed ]; then
+		log_daemon_msg "RTS2 stopped"
+		log_end_msg 0
+	else
+		log_failure_msg "Failed to stop $failed"
+		log_daemon_msg "RTS2 stopped"
+		log_end_msg 1
+	fi
+}
+
+rts2_reload()
+{
+	if grep '^centrald' $CENTRALD_FILE 2>&1 > /dev/null; then
+		for cf in ${RTS2_PID_PREFIX}centrald_*; do
+			pid=`cat $cf`
+			case $system in
+				gentoo|debian|redhat|suse|slackware|cygwin)
+					rts2_log_daemon_msg "Reloading centrald daemon (PID $cf)" "rts2-centrald"
+				  	kill -1 `cat $cf` >>$RTS2_LOG 2>&1
+					rts2_start_log_end_msg $? rts2-centrald
+					;;
+			esac
+		done
+	fi
+	while read device type device_name options; do
+		if [ -f ${RTS2_PID_PREFIX}${device_name} ]; then
+		  	case $system in
+				gentoo|debian|redhat|suse|slackware|cygwin)
+					rts2_log_daemon_msg "Reloading $device_name" "rts2-$device-$type"
+					kill -1 `cat ${RTS2_PID_PREFIX}${device_name}` >>$RTS2_LOG 2>&1
+					rts2_start_log_end_msg $? $device_name
+					;;
+			esac
+		fi
+	done < <(cat $DEVICE_CONFIG | sed -e 's/#.*$//' | egrep -v '^\s*$')
+	while read service service_name options; do
+		if [ -f ${RTS2_PID_PREFIX}${service_name} ]; then
+		  	case $system in
+				gentoo|debian|redhat|suse|slackware|cygwin)
+					rts2_log_daemon_msg "Reloading $service_name" "rts2-$service"
+					kill -1 `cat ${RTS2_PID_PREFIX}${service_name}` >>$RTS2_LOG 2>&1
+					rts2_start_log_end_msg $? $service_name
+					;;
+			esac
+		fi
+	done < <(cat $SERVICE_CONFIG | sed -e 's/#.*$//' | egrep -v '^\s*$')
+}
+
+case "$1" in
+	start)
+		rts2_start
+		;;
+	stop)
+		rts2_stop
+		;;
+	stop-devices)
+		rts2_stop_devices
+		;;
+	stop-services)
+		rts2_stop_services
+		;;
+	restart)
+		rts2_stop
+		rts2_start
+		;;
+	reload)
+		rts2_reload
+		;;
+	*)
+		echo "Usage /etc/init.d/rts2 (start|stop|stop-devices|stop-services|restart|reload)"
+		exit 1
+		;;
+esac
+
+case $system in
+	debian)
+		exit 0
+		;;
+	gentoo|redhat|suse|slackware|cygwin)
+		exit $failedc 
+		;;
+esac

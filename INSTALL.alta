@@ -1,0 +1,27 @@
+Instructions to install Alta Apogee devices
+===========================================
+
+For Apogee ALTA CCDs and filter wheels, you will need to install Apogee SDK.
+You can download one from Random Factory (http://www.randomfactory.com), or
+from RTS2 SVN. Getting drivers from RTS2 SVN is highly recomended, as those are
+patched for few know problems and runs on 64bit platforms.
+
+To get SVN version, run:
+
+user@host:~$ svn co https://rts-2.svn.sf.net/svnroot/rts-2/apogee
+
+Apogee drivers are a bit hairy. But do not worry, you need only apogee_USB.so
+and apogee_NET.so libraries. For this build, you will need libusb-dev package
+(apt-get install libusb-dev). After installing libusb-dev, run following
+commands:
+
+user@host:~$ cd apogee
+user@host:~/apogee$ make apogee_USB.so apogee_NET.so
+
+Then you will need to run ./configure from rts2 with --with-alta option:
+
+user@host:~/apogee$ cd ~/rts2
+user@host:~/rts2$ ./configure --without-wcs --with-alta=$HOME/apogee
+
+Then run make and (as root) make install. Please see RUN file for details on
+that.

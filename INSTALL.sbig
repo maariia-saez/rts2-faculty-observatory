@@ -1,0 +1,36 @@
+Instructions to install SBIG CCDs
+=================================
+
+You will need SBIG Linux driver. You can currenly download driver only from the
+SBIG ftp site:
+
+ftp://ftp.sbig.com/pub/devsw/LinuxDevKit.tar.gz 
+
+Follow instructions in distribution file to setup udev to firmware loading. You can install fxload with
+
+sudo apt-get install fxload
+
+in Ubuntu/Debian.
+
+Check that the sbigudrv.h file contains:
+
+ #define TARGET                 ENV_LINUX                   /* Set for your target */
+
+if TARGET is defined to some other environment, please change it.
+
+Libusb development files need to be installed. On Ubuntu/Debian machine, that's:
+
+sudo apt-get install libusb-dev
+
+You then add to ./configure call:
+
+--with-sbig-include=<path_to_the_directory_with_includes> --with-sbig-lib=<path_to_the_directory_with_libs>
+
+Assuming you are compilling for x86 (64bit) architecture, and you extract LinuxDevKit to /home/sbig, the arquments will be following:
+
+--with-sbig-include=/home/sbig/LinuxDevKit/x86/c/testapp --with-sbig-lib=/home/sbig/LinuxDevKit/x86/c/lib64
+
+You can use --serial-number argument to rts2-camd-sbig to distinguish between multiple cameras by serial
+number.
+
+Petr Kubánek <petr@kubanek.net>

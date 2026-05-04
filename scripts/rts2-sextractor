@@ -1,0 +1,143 @@
+#!/usr/bin/env python
+#
+# Sextractor wrapper script
+#
+# If you would like to see sextractor results, get DS9 and pyds9:
+#
+# http://hea-www.harvard.edu/saord/ds9/
+#
+# Please be aware that current sextractor Ubuntu packages does not work
+# properly. The best workaround is to install package, and the overwrite
+# sextractor binary with one compiled from sources (so you will have access
+# to sextractor configuration files, which program assumes).
+#
+# (C) 2010  Petr Kubanek, Institute of Physics <kubanek@fzu.cz>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 2 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+# Place - Suite 330, Boston, MA  02111-1307, USA.
+
+import sys
+from optparse import OptionParser
+import rts2.sextractor
+
+parser = OptionParser()
+parser.add_option('--ds9',help='plot image and detections in DS9',action='store_true',dest='plot_ds9',default=False)
+parser.add_option('--stat',help='calculate statistics (on all specified segments)',action='store_true',dest='stat',default=False)
+parser.add_option('--stat-segments',help='calculate statistics by segments',action='store_true',dest='stat_segments',default=False)
+parser.add_option('--plot-segments',help='plot histogram of segments FWHM medians',action='store_true',dest='plot_segments',default=False)
+parser.add_option('--save-regs',help='save .reg output of what sextractor found',action='store_true',dest='save_regs',default=False)
+parser.add_option('--segment',help='run statistics on given segments',action='append',dest='segments')
+parser.add_option('--max-stars',help='maximal number of stars used for statistics',action='store',dest='max_stars',default=None)
+parser.add_option('--verbose',help='produce verbose output',action='store_true',dest='verbose',default=False)
+parser.add_option('--sx-bin',help='path to sextractor binary',action='store',dest='sx_bin',default=None)
+parser.add_option('--sx-conf',help='path to sextractor configuration files',action='store',dest='sx_path',default=None)
+
+(options,args) = parser.parse_args()
+
+d = None
+if options.plot_ds9:
+	from ds9 import *
+	d = ds9()
+
+if options.segments:
+	options.segments = map(lambda x:int(x),options.segments)
+
+if options.sx_bin is None:
+        sx_bin='/usr/bin/sextractor' 
+else:
+        sx_bin= options.sx_bin
+
+if options.sx_path is None:
+        sexconfig='/usr/share/sextractor/default.sex',
+        starnnw='/usr/share/sextractor/default.nnw'
+else:
+        sexconfig='{0}/default.sex'.format(options.sx_path)
+        starnnw='{0}/default.nnw'.format(options.sx_path)
+
+c = rts2.sextractor.Sextractor(['EXT_NUMBER','X_IMAGE','Y_IMAGE','MAG_BEST','FLAGS','CLASS_STAR','FWHM_IMAGE','A_IMAGE','B_IMAGE'],sexpath=sx_bin,sexconfig=sexconfig,starnnw=starnnw)
+
+fwhms_segments = None
+
+for fn in args:
+	c.runSExtractor(fn)
+
+	if options.verbose:
+		print 'from {0} extracted {1} sources'.format(fn,len(c.objects))
+	
+	if d:
+		# display in ds9
+		d.set('file {0}'.format(fn))
+		i_x = c.get_field('X_IMAGE')
+		i_y = c.get_field('Y_IMAGE')
+		for x in c.objects:
+			d.set('regions', 'image; circle {0} {1} 10'.format(x[i_x],x[i_y]))
+	
+	if options.save_regs:
+		i_x = c.get_field('X_IMAGE')
+		i_y = c.get_field('Y_IMAGE')
+		regf = open(fn + '.reg', 'w')
+		regf.write('image\n')
+		for x in c.objects:
+			regf.write('circle({0},{1},10)\n'.format(x[i_x],x[i_y]))
+		regf.close()
+	
+	if options.stat:
+		print fn,c.calculate_FWHM(options.max_stars,segments=options.segments)
+	
+	
+	if options.stat_segments:
+	  	i_ext_number = c.get_field('EXT_NUMBER')
+	  	segments = list(set(map(lambda x:x[i_ext_number],c.objects)))
+		segments.sort()
+
+		print fn,len(segments),
+		for s in segments:
+			res = c.calculate_FWHM(options.max_stars,segments=[s])
+			print res[2],res[0],
+			
+		print
+
+	if options.plot_segments:
+		i_ext_number = c.get_field('EXT_NUMBER')
+		i_flags = c.get_field('FLAGS')
+		i_class = c.get_field('CLASS_STAR')
+		i_fwhm = c.get_field('FWHM_IMAGE')
+
+		obj = c.filter_galaxies()
+
+	  	segments = list(set(map(lambda x:x[i_ext_number],c.objects)))
+		segments.sort()
+
+		if fwhms_segments is None:
+			fwhms_segments = range(0,len(segments))
+			fwhms_segments = map(lambda x:[],fwhms_segments)
+
+		for x in c.objects:
+			if x[i_flags] == 0 and x[i_class] != 0 and x[i_fwhm] > 0:
+				fwhms_segments[int(x[i_ext_number])-1].append(x[i_fwhm])
+
+if options.plot_segments:
+	import pylab
+	import math
+	fig = pylab.figure()
+
+	r = math.sqrt(len(fwhms_segments))
+
+	for x in range(0,len(fwhms_segments)):
+		p = fig.add_subplot(r,r,x+1,title='Channel {0} FWHM'.format(x + 1))
+		p.hist(fwhms_segments[x], range(0,5), normed=True)
+		if options.verbose:
+			print x,' '.join(map(str,fwhms_segments[x]))
+
+	pylab.show()

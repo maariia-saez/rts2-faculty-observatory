@@ -1,0 +1,286 @@
+GPOINT(1)
+=========
+
+NAME
+----
+gpoint - GPL (Telescope) Pointing error modelling and corrections
+
+SYNOPSIS
+--------
+
+*gpoint* [--latitude 'latitude'] [-p 'plots'] [-v] [--basic-plots] [--altaz-plots] [--altaz-heat-maps] [--flip 'both|west|east'] [-o 'output'] [--filter 'filtering'] [--refine 'existing model'] [--autofix 'max percents'] 'input file'
+
+*gpoint* [-v] [--latitude 'latitude'] [--plot-offsets 'ha:from-dec:to-dec'] --model-file 'model file'
+
+*gpoint* [-o 'model file'] --add-models 'model1' 'model2' ...
+
+DESCRIPTION
+-----------
+
+This manual page contains description of gpoint, a script to generate
+pointing model. The gpoint is capable to both build new models, as well
+as to add two models together or plot model corrections on given hour angle.
+
+Purpose of the pointing model is to correct for various misalignment, caused
+either by mechanical or electronic components of the telescope.  GPoint is a
+tool to generate and verify such pointing model.
+
+For model generation, input file is needed. This can be prepared from pointing
+run images, where correct WCS is recorded, or from run pointing and centring
+bright stars.  GPoint itself cannot prepare the input file.  Input file must
+contain local sidereal time, relevant RA and DEC of the telescope (in telescope
+coordinates, where e.g. on GEM DEC axis values continue to count above 90/below
+-90) and true RA DEC coordinates (of centre pixel on camera).
+
+RTS2 provides a way to run pointing model target. Either by getting offsets
+through astrometry, or better by getting offsets from astrometry of bright
+stars with a given proper motion. The paragraph *Acquiring data*
+describes those procedures in a slightly bigger detail.
+
+Input data are fit with least square method. The program provides ways to
+plot various graphs, limit and discards bad lines in the input and bad
+pointing terms, and save various results.
+
+GPoint can be run in interactive mode, so the user can modify model fitting
+parameters and see the results.a
+
+Acquiring data
+--------------
+
+In scripts/build-model.py is a Python script, which if executed as exe (*exe
+/etc/rts2/build-model.py*) will take exposures distributed on the sky. If those
+files are processed by for example linkman:astrometry.net[1] to obtain true WCS
+coordinates, they can be used as GPoint input. For this,
+linkman:rts2-fits2gpoint[1] is provided.
+
+To build model from bright stars, use linkman:rts2-built-model-tool[1]. Various input parameters
+govern the script use, please consult program help for details. In a nutshell, the script:
+
+1. picks a alt-az coordinates (either random, or from a given path)
+
+2. finds closest bright star above minimal altitude limit (defaults to 15
+degrees, as only fanatic GRB observers look for object below that limit).
+
+3. points telescope to the bright star
+
+4. takes image of the field
+
+5. finds stars on the image. If there isn't a star with flux above the flux
+limit, continues with the step number 1
+
+6. select the brightest star, calculate its X Y coordinates
+
+7. if the star is closer to specified centre than specified limit
+distance, record az alt offsets, and continues with the step number 1
+
+8. otherwise computes alt/az or ha/dec offsets, feeds those to
+telescope, and continues with the step number 4
+
+OPTIONS
+-------
+
+RTS2 follows the usual GNU command line syntax, with long options
+starting with two dashes (`--').  A summary of options is included below.
+
+You can use \-- (two dashes with a space) to escape arguments which start with
+'-'. So to run command with -1 as an argument, you must specify \-- -1 on
+the command line.
+
+* **-h**,**--help** show help message
+
+* **-o** output model file.
+
+* **-p** specify plots to generate. See <<plotting>> for detailed description
+
+* **-s** save plots to a file
+
+* **--basic-plots** generate basic sets of plots
+
+* **--stat-only** don't try to fit the model - only print statistics.
+  Useful if you don't have (yet) enough points for a complete fit
+
+* **--altaz-plots** 
+
+* **--model-input** existing model file(s) to load and investigate
+
+* **--filter** filter outliers. Expect two values separated with : - the first
+  is value name, second is value in arc-seconds
+
+* **--refine** refine existing model. Specify the existing model as argument.
+  **gpoint** will merge terms from the existing model with any extra terms
+  added, and use all terms in a fit. That way you can improve your existing
+  pointing model after performing some pointing relevant adjustments of the
+  telescope.
+
+* **--autofix** will remove all terms with percentage error above given value.
+  Please see below for description of good fit.
+
+Input file format
+-----------------
+
+Input file is a text file, with format slightly different for GEM (German
+Equatorial Mount) and Alt-Az (Altitude-azimuth) mounts. Single measurements
+of stars positions are put into single line in predefined format.
+
+Lines starting with # are treated as comments and are ignored. The only exception is for
+lines providing telescope type (gem or altaz) and observatory coordinates. Those are identified by
+starting #, followed by either "gem", "altaz" or "altaz-manual" and then
+followed by longitude, latitude (in degrees east / toward north) and
+altitude (in meters above see level) of the telescope.
+
+Plotting options
+----------------
+[[plotting]]
+
+Various plots can be generated. Moreover, the plots can include additional graphics. GPoint can
+also generate pointing model report (a PDF file based on template, describing
+telescope properties).
+
+
+Input files examples
+--------------------
+
+=== GEM
+
+Following is an example of GEM file, where only offsets in RA and DEC are set:
+
+----
+# 15 degrees E, 50 degrees N, 600 m altitude
+# gem 15 50 600
+1    50000.0 280.000  10.000  20.000 -55000 55000 11.000   19.000
+2    50000.1 280.100  50.000  30.000 -55100 55010 51.000   29.000
+3    50000.2 280.200  90.000  40.000 -55200 55020 91.000   39.000
+4    50000.3 280.300  140.000 50.000 -55300 55030 141.000  49.000
+5    50000.4 280.400  180.000 60.000 -55400 55040 181.000  59.000
+6    50000.5 280.500  220.000 70.000 -55500 55050 221.000  69.000
+7    50000.6 280.600  260.000 80.000 -55600 55060 261.000  79.000
+8    50000.7 280.700  300.000 70.000 -55700 55070 301.000  69.000
+9    50000.8 280.800  340.000 60.000 -55800 55080 341.000  59.000
+10   50000.9 280.900  0.000   50.000 -55900 55090 1.000    49.000
+----
+
+=== AltAz
+
+This is an example alt-az file, also with only offsets in AZ and ALT.
+
+----
+# 15 degrees E, 50 degrees N, 600 m altitude
+# altaz 15 50 600
+1    50000.0 280.000  10.000  20.000 -55000 55000 11.000   19.000
+2    50000.1 280.100  50.000  30.000 -55100 55010 51.000   29.000
+3    50000.2 280.200  90.000  40.000 -55200 55020 91.000   39.000
+4    50000.3 280.300  140.000 50.000 -55300 55030 141.000  49.000
+5    50000.4 280.400  180.000 60.000 -55400 55040 181.000  59.000
+6    50000.5 280.500  220.000 70.000 -55500 55050 221.000  69.000
+7    50000.6 280.600  260.000 80.000 -55600 55060 261.000  79.000
+8    50000.7 280.700  300.000 70.000 -55700 55070 301.000  69.000
+9    50000.8 280.800  340.000 60.000 -55800 55080 341.000  59.000
+10   50000.9 280.900  0.000   50.000 -55900 55090 1.000    49.000
+----
+
+=== AltAz manual example
+
+There is an example of altaz input file, acquired in manual mode. This differs
+from simple AltAz by listing RA DEC coordinates, skipping axis counts, and
+listing azimuth and altitude errors instead of real altitude and azimuth.
+
+----
+# model file created on Sat Sep  9 23:29:31 2017
+# altaz-manual 20.8105 -32.3796 1811.0
+1	2458006.3955	344.199166667	-47.9691666667	0.00299667286773	0.0115139876045	71.9134799271	332.80575281
+2	2458006.39597	44.6991666667	-64.0713888889	0.00118032347207	-0.00329354687079	36.3660811294	328.772616105
+3	2458006.39684	335.379583333	12.2052777778	-0.00248005321551	-0.00168196155522	45.2809246782	184.055968841
+4	2458006.39766	279.895833333	-43.1861111111	-0.000485102119392	0.00560965468031	47.6159088397	59.5120597184
+5	2458006.39836	357.838333333	9.31333333333	-0.000989430282641	8.2340430367e-05	42.0020430448	213.883773738
+6	2458006.39917	266.03625	-51.8341666667	-0.000944229724077	0.00333253209624	38.5562264531	46.7337557828
+7	2458006.39972	244.71625	-57.8997222222	-8.03079129312e-05	0.00125539955906	27.6444315581	36.8023520427
+8	2458006.40047	298.562083333	8.46138888889	-0.00266659067016	0.00211948350159	37.1102220731	134.33192348
+9	2458006.40215	26.5241666667	-50.8163888889	0.000947937195389	0.00358273776885	47.9765084367	311.795113933
+10	2458006.40264	321.756666667	-42.5477777778	-2.08140426139e-05	-0.0023701942639	75.6954006023	41.335333116
+11	2458006.40321	330.84	-56.7861111111	0.0024371413226	-0.0190789827098	65.4807496207	5.12656510256
+12	2458006.40377	301.846666667	-52.8808333333	0.000916336520874	-0.00437690819547	58.67711886	39.3255288826
+13	2458006.40463	0.5425	27.0819444444	-0.0026546857427	0.00337769998214	25.8286901946	204.96828524
+14	2458006.40545	18.79625	-45.5313888889	0.000324167523132	0.00539819303236	54.434416469	304.386367662
+15	2458006.40608	331.153333333	-26.8225	-0.000575419691913	0.000200977345457	83.0905214583	143.226788962
+----
+
+MODEL BOOTSTRAPPING
+------------------
+
+It is always good to have pointing model so your target is at least in FOV of
+your instrument. When you start with telescope with so bad model (or no model
+at all), that your target does not appear in instrument fit, there are some
+hints to help:
+
+* if starting with an existing pointing model, try to point to some bright
+  star. Centre the star using **OFFS** (GEM) or **AZALOFFS** (Alt-Az) telescope
+  values. Use values to adjust the existing index error (ih, id for GEM; ia,
+  ie for AltAz) (you have to change sign of what you get as an offset, since
+  model is additive). Verify that you put correct values by restarting mount with
+  the new model, and let it point to same star you found before.
+
+* if you don't have pointing model at all, find few bright stars, record their
+  offsets and fit the first model.
+
+After you get at least some pointing, collect more data points and use
+**--refine** gpoint option to refine the existing pointing model. You should
+not need to move back (e.g. discard the model you are building and start with
+the new one).
+
+GENERATING GOOD FIT
+-------------------
+
+The model creation is rather an art, requiring some experience with how the
+pointing is done. Here are some rules of thumb to follow:
+
+* disregard terms with error value greater than what's their value. **gpoint**
+  allows to do that steps automatically by providing **--autofix 100** on command
+  line (or even below 100).
+
+* collect more data points that you think you should. GEM mounts, where hour
+  axis corresponds with one of the telescope axis, can live with fewer data
+  points than AltAz. Some of the terms needs more that enough data points to be
+  disentangled properly - once you have first model, so your target is in FOV
+  of your instrument, try to collect over 100 points. Watch for progress as
+  more points are collected. You might be surprised how the pointing model
+  changes.
+
+* filter outliers, but be vigilant. Errors might happen, but having too much outliers
+  rather suggest there is something fundamentally wrong.
+
+* plot model errors (residuals) dependence on telescope axis to see if you can
+  improve the model. See examples for the options
+
+EXAMPLES
+--------
+
+* **gpoint** --stat align - print outs pointing statistics
+
+* **gpoint** align - generates basic model
+
+* **gpoint** --autofix 100 align - generates basic model, removes all terms
+  with error greater than 100%
+
+* **gpoint** -p 'ha:ha-corr-merr,dec:ha-corr-merr' --autofix 80 --filter
+  'model-err:25' align - will   remove all points where model
+  (distance) residual is greater than 25 arc seconds, all the term  with error
+  greater than 80%, and will plot graph showing dependence of HA Dec corrected
+  (*cos(dec)) (=HA residual) on HA and DEC axis.
+
+BUGS
+----
+
+Interactive command shell is (yet) not fully operative. AltAz values for GEM
+are calculated, as are Ra-Dec values for AltAz. Try to stay in mount native
+coordinate system.
+
+SEE ALSO
+--------
+
+* linkman:rts2[7]
+* linkman:rts2-telmodeltest[1]
+
+AUTHOR
+------
+
+Petr Kubanek <petr@rts2.org>

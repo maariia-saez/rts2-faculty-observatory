@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+
+<constraints>
+	<time>
+		<interval>
+			<to>2010-08-08T14:13:12</to>
+		</interval>
+		<interval>
+			<from>2010-08-10T14:15:16</from>
+			<to>2010-11-08T11:12:13</to>
+		</interval>
+	</time>
+	<airmass>
+		<interval>
+			<upper>2.0</upper>
+		</interval>
+	</airmass>
+	<HA>
+		<interval>
+			<lower>-2</lower>
+			<upper>2</upper>
+		</interval>
+	</HA>
+	<dec>
+		<interval>
+			<lower>-30</lower>
+			<upper>90</upper>
+		</interval>
+	</dec>
+	<maxRepeats>10</maxRepeats>
+</constraints>

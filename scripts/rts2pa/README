@@ -1,0 +1,192 @@
+Installation and testing of rts2pa polar alignment measurement
+===============================================================
+20112-07-27, Markus Wildi, wildi.markus@bluewin.ch
+
+Prerequisites
+-------------
+
+You need to install PyEphem, (http://rhodesmill.org/pyephem/)
+
+
+Installation
+------------
+Assuming you did the the following RTS2 svn checkout
+
+  cd ~
+  svn co https://rts-2.svn.sf.net/svnroot/rts-2/trunk/rts-2 rts2
+
+  Environment PATH and PYTHONPATH
+  -------------------------------
+  vi ~/.bashrc
+
+  insert:
+
+  export PATH=/your/home/rts2/scripts:/home/wildi/rts2/scripts/rts2pa/$PATH
+  export PYTHONPATH=/your/home/rts2/scripts:/your/home/rts2/scripts/rts2pa:$PYTHONPATH
+
+  source ~/.bashrc
+
+  Postgres DB tables target and scripts entries
+  ---------------------------------------------
+
+  psql --user YOUR_USERNAME YOUR_DB # (see /etc/rts2/rts2.ini)
+  insert into targets values ('YOUR_TARGET_ID', null, null, 'polar alignment measurement, this target does not change the RA/DEC values', 't', '1');
+  insert into scripts values ('YOUR_TARGET_ID', 'YOUR_CAMERA_NAME', '/YOUR/HOME/rts2/scripts/rts2pa/rts2pa_measurement.py'); #(see /etc/rts2/devices\
+)
+
+Testing offline
+---------------
+  sudo chgrp YOUR_GROUP /var/log/rts2-debug
+
+  Test scripts and image data are provided:
+
+  cd ~
+  cd rts2/scripts/rts2pa/test/images
+  wget http://azug.minpet.unibas.ch/~wildi/rts2pa-test-images-2012-07-27.tgz
+  tar zxvf rts2pa-test-images-2012-07-27.tgz
+  cd ..
+
+  Execute the scripts beginning with run_* . A minimal help text
+  is printed on terminal, mainly saying where the log files are
+  stored.
+
+  The file /etc/rts2/devices should look like
+   camd    dummy       C0      
+   teld    dummy       T0      --move fast
+
+
+Testing through RTS2, state ON, night- and daytime
+--------------------------------------------------
+  Preparation
+  -----------
+  After all offline tests ended successfully then you can continue with online testing.
+  You need to define at the time you observe at least one visible target (e.g. with tar_id 2000) in the postgres DB.
+  Then:
+
+  Test at nighttime, clear sky
+  ---------------------------
+  rts2-mon
+  SEL  -> selector_enabled=false
+  EXEC -> enabled=false
+  EXEC -> auto_loop=false       # you restart the process if necessary
+  F4-> yes                      # bring rts2-centrald in state ON (might not be necessary)
+
+  EXEC -> now YOUR_TAR_ID       # rts2pa_measurement.py moves the mount to the meridian above the NCP
+
+
+  Test during daytime
+  -------------------
+
+
+  In addition to the above commands set   
+
+  EXEC -> ignore_day=true       
+
+  at the beginning.
+
+
+
+
+Files in directory rts2/scripts/rts2pa
+--------------------------------------
+
+  Documentation
+  -------------
+  README       This file.
+
+  Regular scripts
+  ---------------
+
+  rts2pa_measurement.py        performs the measurement on a set of images
+
+  Helper scripts
+  --------------
+
+  Test scripts
+  ------------
+
+  Library
+  -------
+  rts2pa.py                    the base class and helper classes
+  astrometry.py                used to find efficiently the center based on scale, ra, dec and radius
+
+
+  
+
+  test/images
+  ----------
+
+  CNP-02-10-00-89-00-00.fits, scale
+
+   JD       = 2452183.336354
+   DATE-OBS = '2001-09-30T20:04:21.0'
+   ORIRA    = 32.5
+   ORIDEC   = 89.0
+   SITE-LON = 47.5
+   SITE-LAT = 7.601
+   
+   replaced DATE-OBS by DATE-ORI
+
+
+  CNP-02-10-30-89-00-20.fits, scale
+
+   JD       = 2452183.357188
+   DATE-OBS = '2001-09-30T20:34:21.0'
+   ORIRA    = 32.625
+   ORIDEC   = 89.00555
+   SITE-LON = 47.5
+   SITE-LAT = 7.601
+
+   replaced DATE-OBS by DATE-ORI
+
+  Not yet of general interest
+  --------------------------
+
+
+Comparision with  ak.c (http://leq.one-arcsec.org, section Downloads)
+---------------------------------------------------------------------
+
+  Configuration for ak.c
+   #
+   # Method King A
+   #
+   method        = King                  # Rambaut, King
+   variant       = A                     # A, B1, B2
+   obs_longitude= -7:36:03.6                 # decimal degrees or sexagesimal
+   obs_latitude  =  47:30:00             # decimal degrees or sexagesimal
+   tz_time       = 22:04:21:cest         # This format
+   tz_date       = 2001:09:30            # This format
+   correction_star_declination =  -47.5  # Star, decimal degrees or sexagesimal
+   measurement_star_rightascension=  2:10:00 # Star, decimal degrees or sexagesimal
+   resolution    =  1.                   # arcsecond/unit, unit = Grid or Pixel
+   #
+   dx            =  20.                  # Movement in X', or dx in units
+   dy            =  7.85                 # Movement in Y', or dy in units
+   dt            = 1800.                 # Duration of the measurement in seconds
+
+ Results from ak.c
+
+   dtau           :          0.13126 rad
+   Julian Date    :    2452183.336354
+   Local hourangle:        285.82 degree
+
+   King h         :         41.01 degree
+   King lambda    :        163.69 arcsec
+
+   King A         :        159.00 arcsec
+   King k         :        123.51 arcsec
+
+   Move the north end of the hour axis    159.00 units to the EAST
+   with star at declination -47.50 degree 158.40 units to the EAST
+
+   Lower elevation of the hour axis       123.51 units
+
+
+ Results from rts2pa_measurement.py
+
+  KingA h        :          40.47 degree
+  King lambda    :         161.82 arcsec 
+
+  King A         :         155.44 arcsec 
+  King           :         123.12 arcsec
+
