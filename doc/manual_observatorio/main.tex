@@ -53,7 +53,7 @@ Los archivos de configuración principales de RTS2 se alojan en el directorio \t
 
 \subsection{Configuración del Telescopio (Meade LX200)}
 El Meade LX200 se conecta típicamente a través de un puerto serie o adaptador USB-Serie (ej: \texttt{/dev/ttyUSB0}).
-(Aquí añadiremos las líneas de configuración exactas una vez tengamos los archivos).
+(Aquí se añadirán las líneas de configuración exactas una vez se tengan los archivos).
 
 \section{Arranque y Operación}
 \subsection{Secuencia de Inicio}
@@ -66,31 +66,53 @@ $ rts2-dome
 \textit{Nota: En un entorno de producción final, estos servicios se configurarán para que inicien automáticamente en el arranque del sistema usando \texttt{systemd} o scripts init.}
 
 \subsection{Interfaz de Usuario (\texttt{rts2-mon})}
-Para interactuar con el observatorio, ver el estado de los componentes y mandar comandos de forma manual, RTS2 incluye una potente consola interactiva llamada \texttt{rts2-mon}. 
+Para interactuar con el observatorio, ver el estado de los componentes y mandar comandos de forma manual, RTS2 incluye una consola interactiva llamada \texttt{rts2-mon}. 
 
-Al ejecutar \texttt{rts2-mon} en la terminal, se despliega una interfaz basada en texto (ncurses) donde cada dispositivo (Telescopio, Cúpula, Cámara) tiene su propia pestaña. Usando las flechas del teclado, los usuarios pueden navegar y enviar comandos en tiempo real, como por ejemplo introducir las coordenadas de Ascensión Recta (RA) y Declinación (DEC) y ordenarle al Meade LX200 que comience a moverse hacia el objetivo (\textit{slewing}).
+Al ejecutar \texttt{rts2-mon} en la terminal, se despliega una interfaz basada en texto. \textbf{Importante:} Al ser una interfaz de consola (ncurses), el ratón no funciona. Se debe usar las flechas del teclado para moverse entre las diferentes pestañas (cada dispositivo, como el Telescopio o la Cámara, tiene una) y la tecla Enter para interactuar. Desde aquí se podrá, por ejemplo, introducir las coordenadas de Ascensión Recta (RA) y Declinación (DEC) y ordenarle al Meade LX200 que comience a moverse hacia el objetivo (acción conocida como \textit{slewing}).
 
 \section{Solución de Problemas Frecuentes (Troubleshooting)}
 
-Esta sección irá creciendo a medida que nos encontremos con bugs y casuísticas reales del montaje, pero los problemas iniciales más comunes a comprobar son:
+Dado que RTS2 se ejecuta en un entorno Linux, es habitual enfrentarse a ciertos errores de configuración del propio sistema operativo. Esta sección servirá como guía de ``primeros auxilios'':
 
 \begin{itemize}
     \item \textbf{El telescopio no responde a los comandos de movimiento:}
     \begin{itemize}
-        \item Verificar que el cable USB/Serie está bien conectado al PC y detectar qué puerto se le ha asignado ejecutando \texttt{dmesg | grep tty}.
-        \item Verificar los permisos de lectura/escritura del puerto serie (ej: \texttt{sudo chmod a+rw /dev/ttyUSB0}).
-        \item Comprobar si el demonio \texttt{teld} sigue ejecutándose o si ha crasheado ejecutando \texttt{ps aux | grep rts2-teld}.
-        \item Revisar los logs específicos del telescopio guardados en \texttt{/var/log/rts2/} o en \texttt{/var/log/syslog}.
+        \item \textbf{1. ¿El PC reconoce el cable?} Ejecutad en la terminal:
+\begin{verbatim}
+$ dmesg | grep tty
+\end{verbatim}
+        (\textit{Explicación: \texttt{dmesg} muestra los mensajes internos de hardware de Linux. Esto nos chivará si el cable del telescopio se ha detectado correctamente como \texttt{/dev/ttyUSB0} o similar}).
+        
+        \item \textbf{2. ¿Hay permisos?} En Linux, por motivos de seguridad, los programas no pueden leer puertos hardware directamente. Para arreglarlo, ejecutad:
+\begin{verbatim}
+$ sudo chmod a+rw /dev/ttyUSB0
+\end{verbatim}
+        (Cambiando \texttt{ttyUSB0} por el puerto real que os haya salido antes). Esto le da permisos de lectura y escritura al puerto.
+        
+        \item \textbf{3. ¿El programa se ha colgado?} Ejecutad:
+\begin{verbatim}
+$ ps aux | grep rts2-teld
+\end{verbatim}
+        (\textit{Explicación: \texttt{ps aux} lista todos los programas que están corriendo en el ordenador. Sirve para comprobar si el demonio del telescopio sigue vivo o si ha crasheado silenciosamente}).
+        
+        \item \textbf{4. Mirar el registro de errores (logs):} RTS2 guarda un diario de todo lo que hace. Los fallos estarán guardados como texto en la carpeta \texttt{/var/log/rts2/}. Podéis ver los últimos mensajes ejecutando:
+\begin{verbatim}
+$ tail -f /var/log/syslog
+\end{verbatim}
     \end{itemize}
     
     \item \textbf{Error de conexión al iniciar los demonios (no encuentran \texttt{centrald}):}
     \begin{itemize}
-        \item Esto ocurre si \texttt{centrald} no está corriendo o si se cerró por algún error. Hay que reiniciar todos los servicios asegurándose de que \texttt{centrald} se levante primero.
+        \item Todos los módulos asumen que \texttt{centrald} ya está funcionando. Si \texttt{centrald} se cierra de golpe, el resto de módulos se quedarán bloqueados buscando conectarse a él. En este caso hay que parar todos los servicios y volver a levantarlos, arrancando \texttt{centrald} siempre el primero.
     \end{itemize}
     
-    \item \textbf{Fallo general de RTS2 al registrar datos de observación:}
+    \item \textbf{Fallo general de RTS2 o errores al arrancar:}
     \begin{itemize}
-        \item RTS2 requiere que el motor de base de datos PostgreSQL esté activo. Se puede comprobar su estado en Linux ejecutando \texttt{systemctl status postgresql}.
+        \item RTS2 necesita conectarse a una base de datos obligatoriamente. Comprobad si la base de datos se ha caído ejecutando:
+\begin{verbatim}
+$ systemctl status postgresql
+\end{verbatim}
+        (Si el estado dice ``inactive'' o ``failed'', podéis intentar revivirla ejecutando \texttt{sudo systemctl restart postgresql}).
     \end{itemize}
 \end{itemize}
 
