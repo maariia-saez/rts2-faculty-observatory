@@ -56,21 +56,42 @@ El Meade LX200 se conecta típicamente a través de un puerto serie o adaptador 
 (Aquí añadiremos las líneas de configuración exactas una vez tengamos los archivos).
 
 \section{Arranque y Operación}
-\subsection{Comandos de Inicio}
-Para iniciar el sistema de forma manual, el orden recomendado es:
+\subsection{Secuencia de Inicio}
+Para iniciar el sistema RTS2 de forma manual en el terminal, se debe respetar el estricto orden de dependencia de los demonios. El orden estándar es:
 \begin{verbatim}
 $ rts2-centrald
 $ rts2-teld-lx200 -d /dev/ttyUSB0
-...
+$ rts2-dome
 \end{verbatim}
+\textit{Nota: En un entorno de producción final, estos servicios se configurarán para que inicien automáticamente en el arranque del sistema usando \texttt{systemd} o scripts init.}
 
-\subsection{Interfaz de Usuario}
-(Sección para documentar qué interfaz gráfica o de terminal se usa para mandar comandos, como \texttt{rts2-mon}).
+\subsection{Interfaz de Usuario (\texttt{rts2-mon})}
+Para interactuar con el observatorio, ver el estado de los componentes y mandar comandos de forma manual, RTS2 incluye una potente consola interactiva llamada \texttt{rts2-mon}. 
+
+Al ejecutar \texttt{rts2-mon} en la terminal, se despliega una interfaz basada en texto (ncurses) donde cada dispositivo (Telescopio, Cúpula, Cámara) tiene su propia pestaña. Usando las flechas del teclado, los usuarios pueden navegar y enviar comandos en tiempo real, como por ejemplo introducir las coordenadas de Ascensión Recta (RA) y Declinación (DEC) y ordenarle al Meade LX200 que comience a moverse hacia el objetivo (\textit{slewing}).
 
 \section{Solución de Problemas Frecuentes (Troubleshooting)}
+
+Esta sección irá creciendo a medida que nos encontremos con bugs y casuísticas reales del montaje, pero los problemas iniciales más comunes a comprobar son:
+
 \begin{itemize}
-    \item \textbf{Problema:} El telescopio no responde a los comandos.
-    \item \textbf{Solución:} Verificar permisos del puerto serie (\texttt{sudo chmod a+rw /dev/ttyUSB0}) y comprobar logs en \texttt{/var/log/syslog} o la salida del demonio.
+    \item \textbf{El telescopio no responde a los comandos de movimiento:}
+    \begin{itemize}
+        \item Verificar que el cable USB/Serie está bien conectado al PC y detectar qué puerto se le ha asignado ejecutando \texttt{dmesg | grep tty}.
+        \item Verificar los permisos de lectura/escritura del puerto serie (ej: \texttt{sudo chmod a+rw /dev/ttyUSB0}).
+        \item Comprobar si el demonio \texttt{teld} sigue ejecutándose o si ha crasheado ejecutando \texttt{ps aux | grep rts2-teld}.
+        \item Revisar los logs específicos del telescopio guardados en \texttt{/var/log/rts2/} o en \texttt{/var/log/syslog}.
+    \end{itemize}
+    
+    \item \textbf{Error de conexión al iniciar los demonios (no encuentran \texttt{centrald}):}
+    \begin{itemize}
+        \item Esto ocurre si \texttt{centrald} no está corriendo o si se cerró por algún error. Hay que reiniciar todos los servicios asegurándose de que \texttt{centrald} se levante primero.
+    \end{itemize}
+    
+    \item \textbf{Fallo general de RTS2 al registrar datos de observación:}
+    \begin{itemize}
+        \item RTS2 requiere que el motor de base de datos PostgreSQL esté activo. Se puede comprobar su estado en Linux ejecutando \texttt{systemctl status postgresql}.
+    \end{itemize}
 \end{itemize}
 
 \end{document}
