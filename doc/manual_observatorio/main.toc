@@ -5,6 +5,7 @@
 \contentsline {section}{\numberline {3}Configuración del Entorno (Linux)}{4}{section.3}%
 \contentsline {subsection}{\numberline {3.1}Archivo \texttt {rts2.ini}}{4}{subsection.3.1}%
 \contentsline {subsection}{\numberline {3.2}Configuración del Telescopio (Meade LX200)}{4}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Configuración de la Cúpula (Talon 6)}{4}{subsection.3.3}%
 \contentsline {section}{\numberline {4}Arranque y Operación}{5}{section.4}%
 \contentsline {subsection}{\numberline {4.1}Secuencia de Inicio}{5}{subsection.4.1}%
 \contentsline {subsection}{\numberline {4.2}Interfaz de Usuario (\texttt {rts2-mon})}{5}{subsection.4.2}%

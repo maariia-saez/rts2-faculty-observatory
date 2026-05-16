@@ -39,8 +39,8 @@ En nuestro observatorio, la arquitectura se compondrá principalmente de los sig
 \begin{itemize}
     \item \textbf{centrald}: Es el cerebro del sistema y el enrutador de mensajes. Conoce el estado global y permite que los demás demonios hablen entre ellos. Debe ejecutarse siempre el primero.
     \item \textbf{teld} (Telescope Daemon): Controla el apuntado, el seguimiento y el movimiento de la montura. Para nuestro telescopio, utilizaremos el módulo específico de \textbf{Meade LX200}.
-    \item \textbf{dome} (Dome Daemon): Controla el movimiento de la cúpula, asegurándose de que la apertura (la rendija) esté siempre alineada con donde apunta el telescopio.
-    \item \textbf{camd} (Camera Daemon): Se encarga de controlar la cámara principal, gestionar los tiempos de exposición y la refrigeración.
+    \item \textbf{dome} (Dome Daemon): Controla el movimiento de la cúpula, asegurándose de que la apertura (la rendija) esté siempre alineada con donde apunta el telescopio. El sistema hardware de control de nuestra cúpula es el \textbf{Talon 6}.
+    \item \textbf{camd} (Camera Daemon): Se encarga de controlar la cámara principal, gestionar los tiempos de exposición y la refrigeración. \textit{(Actualmente el hardware fotográfico está pendiente de instalación)}.
     \item \textbf{execd} (Execution Daemon): Es el encargado de leer los planes de observación (qué observar, cuándo y cómo) y enviar las órdenes en secuencia al resto del sistema.
     \item \textbf{Base de Datos (PostgreSQL)}: RTS2 guarda todos los objetivos astronómicos, registros de observación y logs en una base de datos central para poder automatizar el observatorio.
 \end{itemize}
@@ -52,8 +52,12 @@ Los archivos de configuración principales de RTS2 se alojan en el directorio \t
 (En esta sección se documentará el contenido del archivo principal extraído del ordenador del laboratorio).
 
 \subsection{Configuración del Telescopio (Meade LX200)}
-El Meade LX200 se conecta típicamente a través de un puerto serie o adaptador USB-Serie (ej: \texttt{/dev/ttyUSB0}).
+El Meade LX200 se comunica con el ordenador mediante un adaptador USB a RS232. En entornos Windows se correspondía históricamente con el puerto \texttt{COM3}, lo cual en Linux se traducirá habitualmente en el dispositivo \texttt{/dev/ttyUSB0} (o \texttt{ttyUSB1}).
 (Aquí se añadirán las líneas de configuración exactas una vez se tengan los archivos).
+
+\subsection{Configuración de la Cúpula (Talon 6)}
+El sistema de control de la cúpula Talon 6 se encuentra conectado por un puerto serie nativo. En Windows se mapea como \texttt{COM1}, lo que en sistemas Linux equivale directamente al dispositivo \texttt{/dev/ttyS0}.
+(Aquí se añadirán las líneas de configuración exactas una vez se configure el driver).
 
 \section{Arranque y Operación}
 \subsection{Secuencia de Inicio}
