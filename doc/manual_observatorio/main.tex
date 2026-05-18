@@ -6,7 +6,23 @@
 \usepackage{geometry}
 \geometry{a4paper, margin=2.5cm}
 \usepackage{titlesec}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins}
 \newcommand{\sectionbreak}{\clearpage}
+
+% Caja para notas y advertencias
+\newtcolorbox{notabox}{
+  colback=blue!5!white, colframe=blue!40!black,
+  title=Nota, fonttitle=\bfseries, boxrule=0.5pt
+}
+\newtcolorbox{avisobox}{
+  colback=orange!10!white, colframe=orange!60!black,
+  title=Aviso, fonttitle=\bfseries, boxrule=0.5pt
+}
 
 \title{Manual de Operación y Automatización del Observatorio\\
 \large Basado en RTS2 (Remote Telescope System 2)}
@@ -19,105 +35,313 @@
 \tableofcontents
 \newpage
 
+% ──────────────────────────────────────────────────────────────────────────────
 \section{Introducción}
+% ──────────────────────────────────────────────────────────────────────────────
+
 El presente documento constituye el Manual Oficial de Operación y Automatización del observatorio astronómico de la Escuela Técnica Superior de Ingenieros Informáticos (ETSIINF) de la Universidad Politécnica de Madrid (UPM).
 
-Este proyecto nace de la iniciativa de un grupo de estudiantes con el objetivo de reparar, actualizar y automatizar las instalaciones del observatorio, el cual cuenta como instrumento principal con un telescopio \textbf{Meade LX200} y una cúpula motorizada.
+Este proyecto nace de la iniciativa de un grupo de estudiantes con el objetivo de reparar, actualizar y automatizar las instalaciones del observatorio, el cual cuenta como instrumento principal con un telescopio \textbf{Meade LX200} y una cúpula motorizada controlada por el sistema \textbf{Talon~6}.
 
 Para llevar a cabo esta automatización, se ha adoptado el software \textbf{RTS2} (Remote Telescope System 2), un entorno de código abierto ampliamente utilizado a nivel mundial para el control robótico de observatorios astronómicos. RTS2 permite no solo coordinar el movimiento del telescopio y la apertura de la cúpula, sino también programar secuencias de observación desatendidas, gestionar cámaras y registrar condiciones meteorológicas.
 
-El objetivo principal de esta guía es proporcionar a los futuros alumnos e investigadores de la facultad un recurso claro, técnico y estructurado. Aquí se detalla desde la configuración inicial en sistemas Linux y la compilación del código fuente, hasta los comandos diarios de operación y la resolución de problemas (troubleshooting).
+El objetivo principal de esta guía es proporcionar a los futuros alumnos e investigadores de la facultad un recurso claro, técnico y estructurado. Aquí se detalla desde la configuración inicial en sistemas Linux y la compilación del código fuente, hasta los comandos diarios de operación y la resolución de problemas (\textit{troubleshooting}).
 
+% ──────────────────────────────────────────────────────────────────────────────
 \section{Arquitectura del Sistema RTS2}
-RTS2 (Remote Telescope System 2) está diseñado como un sistema distribuido y modular basado en \textit{demonios} (procesos que se ejecutan en segundo plano en Linux). Esto permite aislar los fallos: si la cámara falla, el demonio de la cámara se reinicia sin afectar al seguimiento del telescopio.
+% ──────────────────────────────────────────────────────────────────────────────
 
-Todos los demonios se comunican entre sí enviando mensajes a través de un puerto de red local (habitualmente el puerto 8889).
+RTS2 está diseñado como un sistema \textbf{distribuido y modular} basado en \textit{demonios} (procesos que se ejecutan en segundo plano en Linux). Esta arquitectura permite aislar los fallos: si la cámara falla, su demonio se reinicia sin afectar al seguimiento del telescopio ni a otros componentes.
 
-\subsection{Componentes y Demonios Principales}
-En nuestro observatorio, la arquitectura se compondrá principalmente de los siguientes elementos:
+Todos los demonios se comunican entre sí enviando mensajes a través del demonio central (\texttt{centrald}), que escucha habitualmente en el \textbf{puerto~8889} de la red local.
+
+% ── 2.1 ──────────────────────────────────────────────────────────────────────
+\subsection{Arquitectura en Capas}
+
+El sistema RTS2 puede entenderse como una pila de cuatro capas funcionales:
+
+\begin{description}[leftmargin=3cm, style=nextline]
+  \item[Capa de Hardware] Los dispositivos físicos: telescopio, cúpula, cámara, focalizador y sensores. Cada uno se comunica con el PC mediante un protocolo propio (RS232, USB, red).
+
+  \item[Capa de Demonios] Un proceso independiente por dispositivo traduce los comandos internos de RTS2 al protocolo del hardware. Si un demonio cae, el resto del sistema sigue funcionando.
+
+  \item[Capa Central] \texttt{centrald} actúa como enrutador de mensajes y árbitro del estado global. Es el único componente indispensable: sin él, ningún otro demonio puede comunicarse.
+
+  \item[Capa de Automatización e Interfaces] Herramientas de alto nivel que orquestan la noche de observación (\texttt{execd}, \texttt{rts2-scheduler}) y permiten la interacción humana (\texttt{rts2-mon}, interfaz web HTTP).
+\end{description}
+
+% ── 2.2 ──────────────────────────────────────────────────────────────────────
+\subsection{Demonios de Dispositivo}
+
+Cada pieza de hardware tiene un demonio dedicado. Los disponibles en RTS2 son:
 
 \begin{itemize}
-    \item \textbf{centrald}: Es el cerebro del sistema y el enrutador de mensajes. Conoce el estado global y permite que los demás demonios hablen entre ellos. Debe ejecutarse siempre el primero.
-    \item \textbf{teld} (Telescope Daemon): Controla el apuntado, el seguimiento y el movimiento de la montura. Para nuestro telescopio, utilizaremos el módulo específico de \textbf{Meade LX200}.
-    \item \textbf{dome} (Dome Daemon): Controla el movimiento de la cúpula, asegurándose de que la apertura (la rendija) esté siempre alineada con donde apunta el telescopio. El sistema hardware de control de nuestra cúpula es el \textbf{Talon 6}.
-    \item \textbf{camd} (Camera Daemon): Se encarga de controlar la cámara principal, gestionar los tiempos de exposición y la refrigeración. \textit{(Actualmente el hardware fotográfico está pendiente de instalación)}.
-    \item \textbf{execd} (Execution Daemon): Es el encargado de leer los planes de observación (qué observar, cuándo y cómo) y enviar las órdenes en secuencia al resto del sistema.
-    \item \textbf{Base de Datos (PostgreSQL)}: RTS2 guarda todos los objetivos astronómicos, registros de observación y logs en una base de datos central para poder automatizar el observatorio.
+  \item \textbf{\texttt{rts2-teld-lx200}} --- Demonio del telescopio para monturas con protocolo Meade LX200. Gestiona el apuntado (\textit{slewing}), el seguimiento sidéreo y el modelo de alineación.
+
+  \item \textbf{\texttt{rts2-dome}} --- Demonio de la cúpula. Coordina la apertura de la rendija con la posición del telescopio para que siempre estén alineados. Se conecta al controlador \textbf{Talon~6} mediante \texttt{/dev/ttyS0}.
+
+  \item \textbf{\texttt{rts2-camd}} --- Demonio de la cámara CCD. Gestiona exposiciones, refrigeración y la escritura de las imágenes en formato FITS. \textit{(Pendiente de instalación del hardware)}.
+
+  \item \textbf{\texttt{rts2-focusd}} --- Demonio del focalizador motorizado. Permite enfocar automáticamente usando algoritmos de análisis de imagen. \textit{(Pendiente)}.
+
+  \item \textbf{\texttt{rts2-filterd}} --- Demonio de la rueda de filtros. Controla el cambio de filtro fotométrico entre exposiciones. \textit{(Pendiente)}.
+
+  \item \textbf{\texttt{rts2-sensord}} --- Demonio de sensores meteorológicos. Monitoriza nubes, lluvia, humedad y viento para cerrar el observatorio en caso de mal tiempo.
 \end{itemize}
 
-\section{Configuración del Entorno (Linux)}
-Los archivos de configuración principales de RTS2 se alojan en el directorio \texttt{/etc/rts2/}. 
-
-\subsection{Archivo \texttt{rts2.ini}}
-(En esta sección se documentará el contenido del archivo principal extraído del ordenador del laboratorio).
-
-\subsection{Configuración del Telescopio (Meade LX200)}
-El Meade LX200 se comunica con el ordenador mediante un adaptador USB a RS232. En entornos Windows se correspondía históricamente con el puerto \texttt{COM3}, lo cual en Linux se traducirá habitualmente en el dispositivo \texttt{/dev/ttyUSB0} (o \texttt{ttyUSB1}).
-(Aquí se añadirán las líneas de configuración exactas una vez se tengan los archivos).
-
-\subsection{Configuración de la Cúpula (Talon 6)}
-El sistema de control de la cúpula Talon 6 se encuentra conectado por un puerto serie nativo. En Windows se mapea como \texttt{COM1}, lo que en sistemas Linux equivale directamente al dispositivo \texttt{/dev/ttyS0}.
-(Aquí se añadirán las líneas de configuración exactas una vez se configure el driver).
-
-\section{Arranque y Operación}
-\subsection{Secuencia de Inicio}
-Para iniciar el sistema RTS2 de forma manual en el terminal, se debe respetar el estricto orden de dependencia de los demonios. El orden estándar es:
-\begin{verbatim}
-$ rts2-centrald
-$ rts2-teld-lx200 -d /dev/ttyUSB0
-$ rts2-dome
-\end{verbatim}
-\textit{Nota: En un entorno de producción final, estos servicios se configurarán para que inicien automáticamente en el arranque del sistema usando \texttt{systemd} o scripts init.}
-
-\subsection{Interfaz de Usuario (\texttt{rts2-mon})}
-Para interactuar con el observatorio, ver el estado de los componentes y mandar comandos de forma manual, RTS2 incluye una consola interactiva llamada \texttt{rts2-mon}. 
-
-Al ejecutar \texttt{rts2-mon} en la terminal, se despliega una interfaz basada en texto. \textbf{Importante:} Al ser una interfaz de consola (ncurses), el ratón no funciona. Se debe usar las flechas del teclado para moverse entre las diferentes pestañas (cada dispositivo, como el Telescopio o la Cámara, tiene una) y la tecla Enter para interactuar. Desde aquí se podrá, por ejemplo, introducir las coordenadas de Ascensión Recta (RA) y Declinación (DEC) y ordenarle al Meade LX200 que comience a moverse hacia el objetivo (acción conocida como \textit{slewing}).
-
-\section{Solución de Problemas Frecuentes (Troubleshooting)}
-
-Dado que RTS2 se ejecuta en un entorno Linux, es habitual enfrentarse a ciertos errores de configuración del propio sistema operativo. Esta sección servirá como guía de ``primeros auxilios'':
+% ── 2.3 ──────────────────────────────────────────────────────────────────────
+\subsection{Demonios de Automatización y Control}
 
 \begin{itemize}
-    \item \textbf{El telescopio no responde a los comandos de movimiento:}
-    \begin{itemize}
-        \item \textbf{1. ¿El PC reconoce el cable?} Ejecutad en la terminal:
+  \item \textbf{\texttt{centrald}} --- Enrutador central de mensajes (puerto~8889). Conoce el estado global del sistema y el modo de operación actual. Debe arrancarse siempre el primero.
+
+  \item \textbf{\texttt{execd}} (Execution Daemon) --- Lee los planes de observación y envía las órdenes en secuencia al resto del sistema: apuntar el telescopio, abrir la cúpula, capturar con la cámara, cambiar filtro.
+
+  \item \textbf{\texttt{rts2-scheduler}} --- Planificador automático de noches. Consulta la base de datos de objetivos y decide qué observar en cada momento según criterios de altitud, prioridad y tiempo disponible.
+
+  \item \textbf{\texttt{moodd}} (Mode Daemon) --- Gestiona el estado global del observatorio (ver Sección~\ref{sec:modos}). Determina si el sistema está en modo diurno, crepuscular, nocturno o de emergencia.
+
+  \item \textbf{\texttt{rts2-logger}} --- Registra en la base de datos PostgreSQL todos los eventos del sistema: comandos, errores, resultados de observación y condiciones meteorológicas.
+
+  \item \textbf{\texttt{rts2-httpd}} --- Servidor HTTP que expone una API JSON/XML-RPC. Permite controlar el observatorio desde un navegador web o desde scripts Python remotos.
+\end{itemize}
+
+% ── 2.4 ──────────────────────────────────────────────────────────────────────
+\subsection{Base de Datos y Bibliotecas}
+
+\textbf{PostgreSQL} es el almacén central de RTS2. Guarda:
+\begin{itemize}
+  \item El catálogo de objetivos astronómicos (\textit{targets}) con sus coordenadas y restricciones de observación.
+  \item El historial de observaciones realizadas (qué se observó, cuándo, con qué instrumento).
+  \item Los metadatos de las imágenes FITS obtenidas.
+  \item Los registros de eventos y alertas del sistema.
+\end{itemize}
+
+Internamente, RTS2 está construido sobre un conjunto de \textbf{bibliotecas C++11} que los demonios comparten:
+
+\begin{center}
+\begin{tabular}{lp{9cm}}
+  \toprule
+  \textbf{Biblioteca} & \textbf{Función} \\
+  \midrule
+  \texttt{librts2}          & Clases base: conexiones, variables compartidas, bucle de eventos. \\
+  \texttt{librts2db}        & Acceso a PostgreSQL: targets, observaciones, logs. \\
+  \texttt{librts2tel}       & Cálculos astrométricos: conversión de coordenadas, refracción. \\
+  \texttt{librts2script}    & Motor de scripting de planes de observación. \\
+  \texttt{librts2fits}      & Lectura y escritura de imágenes en formato FITS. \\
+  \texttt{librts2lx200}     & Implementación del protocolo serie Meade LX200. \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+% ── 2.5 ──────────────────────────────────────────────────────────────────────
+\subsection{Modos de Operación del Sistema}
+\label{sec:modos}
+
+\texttt{moodd} mantiene el sistema en uno de los siguientes estados. Cada modo habilita o bloquea acciones concretas (p.ej., en modo \textsc{day} no se puede abrir la cúpula):
+
+\begin{center}
+\begin{tabular}{lp{9.5cm}}
+  \toprule
+  \textbf{Modo} & \textbf{Descripción} \\
+  \midrule
+  \textsc{day}     & Operación diurna. La cúpula permanece cerrada. Se permiten calibraciones internas y mantenimiento. \\[3pt]
+  \textsc{dusk}    & Crepúsculo vespertino. El sistema prepara los instrumentos: enfriamiento de la cámara, \textit{flat fields} de cielo. \\[3pt]
+  \textsc{night}   & Noche astronómica. Modo de observación plena; el planificador (\texttt{rts2-scheduler}) toma el control. \\[3pt]
+  \textsc{dawn}    & Amanecer astronómico. Fin de observaciones; se realizan \textit{flat fields} de amanecer y se cierra la cúpula. \\[3pt]
+  \textsc{standby} & Emergencia meteorológica (lluvia, viento excesivo, nubes densas). El sistema cierra la cúpula de forma automática y espera. \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+Las transiciones entre modos las gestiona \texttt{moodd} de forma automática en función de la hora solar y de las lecturas de los sensores meteorológicos.
+
+% ── 2.6 ──────────────────────────────────────────────────────────────────────
+\subsection{Flujo de una Observación Automática}
+\label{sec:flujo}
+
+Cuando el sistema opera en modo \textsc{night} con \texttt{execd} y \texttt{rts2-scheduler} activos, el ciclo de observación de un único objetivo transcurre así:
+
+\begin{enumerate}
+  \item \textbf{Planificación}: \texttt{rts2-scheduler} consulta la base de datos y selecciona el siguiente objetivo según altitud, prioridad y tiempo restante de la noche.
+  \item \textbf{Asignación}: \texttt{rts2-scheduler} envía el objetivo a \texttt{execd}.
+  \item \textbf{Apuntado}: \texttt{execd} ordena a \texttt{centrald} que mueva el telescopio. \texttt{centrald} retransmite la orden a \texttt{rts2-teld-lx200}, que la ejecuta mediante el protocolo LX200 (\texttt{/dev/ttyUSB0}).
+  \item \textbf{Apertura de la cúpula}: \texttt{execd} ordena a \texttt{rts2-dome} que abra y alinee la rendija con la posición del telescopio. La cúpula sigue al telescopio durante toda la observación.
+  \item \textbf{Exposición}: Una vez el telescopio está en seguimiento, \texttt{execd} ordena a \texttt{rts2-camd} una exposición con el filtro y el tiempo indicados en el plan.
+  \item \textbf{Escritura}: \texttt{rts2-camd} guarda la imagen en formato FITS y \texttt{rts2-logger} registra los metadatos en PostgreSQL.
+  \item \textbf{Iteración}: \texttt{execd} señala a \texttt{rts2-scheduler} que el objetivo ha sido completado y el ciclo vuelve al paso~1.
+\end{enumerate}
+
+% ──────────────────────────────────────────────────────────────────────────────
+\section{Conexiones Físicas del Hardware}
+% ──────────────────────────────────────────────────────────────────────────────
+
+La siguiente tabla resume el estado actual de los dispositivos físicos instalados en el observatorio:
+
+\begin{center}
+\begin{tabular}{llllc}
+  \toprule
+  \textbf{Componente} & \textbf{Modelo} & \textbf{Puerto (Win)} & \textbf{Puerto (Linux)} & \textbf{Estado} \\
+  \midrule
+  Telescopio   & Meade LX200    & \texttt{COM3} & \texttt{/dev/ttyUSB0} & \textcolor{green!50!black}{Conectado} \\
+  Cúpula       & Talon 6        & \texttt{COM1} & \texttt{/dev/ttyS0}   & \textcolor{green!50!black}{Conectado} \\
+  Cámara CCD   & Por determinar & ---           & ---                   & \textcolor{orange!70!black}{Pendiente} \\
+  Focalizador  & Por determinar & ---           & ---                   & \textcolor{orange!70!black}{Pendiente} \\
+  Sensor meteo & Por determinar & ---           & ---                   & \textcolor{orange!70!black}{Pendiente} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+Las conexiones físicas actuales son:
+
+\begin{itemize}
+  \item \textbf{Telescopio Meade LX200}: el PC se conecta mediante un \textbf{adaptador USB--RS232}. En Linux, el adaptador aparece como \texttt{/dev/ttyUSB0} (velocidad 9600~bps, sin paridad, 8~bits de datos).
+  \item \textbf{Cúpula Talon~6}: conectada al \textbf{puerto serie nativo} del PC (\texttt{/dev/ttyS0}). No requiere adaptador.
+  \item \textbf{Futuros instrumentos} (cámara, focalizador): se conectarán probablemente mediante USB o FireWire, y se integrarán a través del demonio \texttt{rts2-camd} correspondiente al modelo elegido.
+\end{itemize}
+
+% ──────────────────────────────────────────────────────────────────────────────
+\section{Configuración del Entorno (Linux)}
+% ──────────────────────────────────────────────────────────────────────────────
+
+Los archivos de configuración principales de RTS2 se alojan en el directorio \texttt{/etc/rts2/}.
+
+\subsection{Archivo \texttt{rts2.ini}}
+\textit{(En esta sección se documentará el contenido del archivo principal extraído del ordenador del laboratorio)}.
+
+\subsection{Configuración del Telescopio (Meade LX200)}
+El Meade LX200 se comunica con el ordenador mediante un adaptador USB--RS232. En entornos Windows se correspondía históricamente con el puerto \texttt{COM3}, lo cual en Linux se traduce habitualmente en el dispositivo \texttt{/dev/ttyUSB0} (o \texttt{ttyUSB1}).
+
+\textit{(Aquí se añadirán las líneas de configuración exactas una vez se tengan los archivos)}.
+
+\subsection{Configuración de la Cúpula (Talon 6)}
+El sistema de control de la cúpula Talon~6 se encuentra conectado por un puerto serie nativo. En Windows se mapea como \texttt{COM1}, lo que en sistemas Linux equivale directamente al dispositivo \texttt{/dev/ttyS0}.
+
+\textit{(Aquí se añadirán las líneas de configuración exactas una vez se configure el driver)}.
+
+% ──────────────────────────────────────────────────────────────────────────────
+\section{Arranque y Operación}
+% ──────────────────────────────────────────────────────────────────────────────
+
+\subsection{Secuencia de Inicio}
+
+El orden de arranque de los demonios es \textbf{estricto}: \texttt{centrald} debe estar activo antes de que cualquier otro demonio intente conectarse. El orden completo recomendado es:
+
+\begin{enumerate}
+  \item \textbf{Base de datos} (prerequisito de todo el sistema):
+\begin{verbatim}
+$ sudo systemctl start postgresql
+\end{verbatim}
+
+  \item \textbf{Enrutador central} (siempre el primero):
+\begin{verbatim}
+$ rts2-centrald
+\end{verbatim}
+
+  \item \textbf{Demonio del telescopio}:
+\begin{verbatim}
+$ rts2-teld-lx200 -d /dev/ttyUSB0
+\end{verbatim}
+
+  \item \textbf{Demonio de la cúpula}:
+\begin{verbatim}
+$ rts2-dome -d /dev/ttyS0
+\end{verbatim}
+
+  \item \textbf{Demonio de ejecución} (opcional, para observación automática):
+\begin{verbatim}
+$ rts2-executor
+\end{verbatim}
+
+  \item \textbf{Interfaz de usuario}:
+\begin{verbatim}
+$ rts2-mon
+\end{verbatim}
+\end{enumerate}
+
+\begin{notabox}
+En un entorno de producción final, estos servicios se configurarán para iniciar automáticamente en el arranque del sistema mediante \texttt{systemd}. El repositorio incluye plantillas de unit files en \texttt{conf/}.
+\end{notabox}
+
+\subsection{Interfaz de Usuario (\texttt{rts2-mon})}
+
+Para interactuar con el observatorio, ver el estado de los componentes y enviar comandos de forma manual, RTS2 incluye una consola interactiva llamada \texttt{rts2-mon}.
+
+Al ejecutar \texttt{rts2-mon} en la terminal, se despliega una interfaz basada en texto (ncurses). \textbf{Importante:} el ratón no funciona en esta interfaz. Se deben usar las flechas del teclado para moverse entre las pestañas de cada dispositivo (Telescopio, Cúpula, Cámara, etc.) y la tecla \texttt{Enter} para interactuar.
+
+Desde \texttt{rts2-mon} se puede, por ejemplo, introducir las coordenadas de Ascensión Recta (RA) y Declinación (Dec) y ordenar al Meade LX200 que comience a moverse hacia el objetivo (acción conocida como \textit{slewing}).
+
+\subsection{Interfaz Web (\texttt{rts2-httpd})}
+
+\texttt{rts2-httpd} expone una API HTTP/JSON en el puerto 8889 (por defecto). Permite:
+\begin{itemize}
+  \item Consultar el estado de todos los demonios desde un navegador web.
+  \item Enviar comandos de forma remota mediante peticiones HTTP.
+  \item Integrar el observatorio con scripts Python usando el módulo \texttt{python3/rts2.py} incluido en el repositorio.
+\end{itemize}
+
+% ──────────────────────────────────────────────────────────────────────────────
+\section{Solución de Problemas Frecuentes (\textit{Troubleshooting})}
+% ──────────────────────────────────────────────────────────────────────────────
+
+Dado que RTS2 se ejecuta en un entorno Linux, es habitual enfrentarse a ciertos errores de configuración. Esta sección sirve como guía de primeros auxilios.
+
+\begin{itemize}
+
+  \item \textbf{El telescopio no responde a los comandos de movimiento:}
+  \begin{enumerate}
+    \item \textbf{¿El PC reconoce el cable?} Ejecutar en la terminal:
 \begin{verbatim}
 $ dmesg | grep tty
 \end{verbatim}
-        (\textit{Explicación: \texttt{dmesg} muestra los mensajes internos de hardware de Linux. Esto nos chivará si el cable del telescopio se ha detectado correctamente como \texttt{/dev/ttyUSB0} o similar}).
-        
-        \item \textbf{2. ¿Hay permisos?} En Linux, por motivos de seguridad, los programas no pueden leer puertos hardware directamente. Para arreglarlo, ejecutad:
+    \textit{\texttt{dmesg} muestra los mensajes internos de hardware de Linux y confirma si el adaptador USB--RS232 se ha detectado como \texttt{/dev/ttyUSB0} o similar.}
+
+    \item \textbf{¿Hay permisos?} En Linux, los programas no pueden leer puertos hardware sin permiso explícito:
 \begin{verbatim}
 $ sudo chmod a+rw /dev/ttyUSB0
 \end{verbatim}
-        (Cambiando \texttt{ttyUSB0} por el puerto real que os haya salido antes). Esto le da permisos de lectura y escritura al puerto.
-        
-        \item \textbf{3. ¿El programa se ha colgado?} Ejecutad:
+    (Sustituir \texttt{ttyUSB0} por el puerto detectado en el paso anterior).
+
+    \item \textbf{¿El demonio está vivo?}
 \begin{verbatim}
 $ ps aux | grep rts2-teld
 \end{verbatim}
-        (\textit{Explicación: \texttt{ps aux} lista todos los programas que están corriendo en el ordenador. Sirve para comprobar si el demonio del telescopio sigue vivo o si ha crasheado silenciosamente}).
-        
-        \item \textbf{4. Mirar el registro de errores (logs):} RTS2 guarda un diario de todo lo que hace. Los fallos estarán guardados como texto en la carpeta \texttt{/var/log/rts2/}. Podéis ver los últimos mensajes ejecutando:
+    Lista los procesos en ejecución y confirma si el demonio del telescopio sigue activo.
+
+    \item \textbf{Consultar los logs:}
 \begin{verbatim}
 $ tail -f /var/log/syslog
 \end{verbatim}
-    \end{itemize}
-    
-    \item \textbf{Error de conexión al iniciar los demonios (no encuentran \texttt{centrald}):}
-    \begin{itemize}
-        \item Todos los módulos asumen que \texttt{centrald} ya está funcionando. Si \texttt{centrald} se cierra de golpe, el resto de módulos se quedarán bloqueados buscando conectarse a él. En este caso hay que parar todos los servicios y volver a levantarlos, arrancando \texttt{centrald} siempre el primero.
-    \end{itemize}
-    
-    \item \textbf{Fallo general de RTS2 o errores al arrancar:}
-    \begin{itemize}
-        \item RTS2 necesita conectarse a una base de datos obligatoriamente. Comprobad si la base de datos se ha caído ejecutando:
+    RTS2 guarda un diario de todos los eventos en \texttt{/var/log/rts2/}.
+  \end{enumerate}
+
+  \item \textbf{Error de conexión al iniciar los demonios} (\textit{no encuentran \texttt{centrald}}):
+
+  Todos los módulos asumen que \texttt{centrald} ya está funcionando. Si \texttt{centrald} se cierra de golpe, el resto de demonios quedarán bloqueados intentando conectarse. La solución es parar todos los servicios y volver a levantarlos, arrancando \texttt{centrald} siempre en primer lugar.
+
+  \item \textbf{Fallo general de RTS2 o errores al arrancar:}
+
+  RTS2 necesita conectarse a PostgreSQL obligatoriamente. Comprobar el estado de la base de datos:
 \begin{verbatim}
 $ systemctl status postgresql
 \end{verbatim}
-        (Si el estado dice ``inactive'' o ``failed'', podéis intentar revivirla ejecutando \texttt{sudo systemctl restart postgresql}).
-    \end{itemize}
+  Si el estado indica \texttt{inactive} o \texttt{failed}, intentar reiniciarla:
+\begin{verbatim}
+$ sudo systemctl restart postgresql
+\end{verbatim}
+
+  \item \textbf{La cúpula no sigue al telescopio:}
+
+  Comprobar que el demonio \texttt{rts2-dome} está registrado en \texttt{centrald} (visible en \texttt{rts2-mon}). Verificar también que \texttt{/dev/ttyS0} tiene permisos de lectura/escritura:
+\begin{verbatim}
+$ ls -l /dev/ttyS0
+$ sudo chmod a+rw /dev/ttyS0
+\end{verbatim}
+
+  \item \textbf{La cúpula cierra automáticamente en modo \textsc{standby}:}
+
+  Este comportamiento es correcto: \texttt{moodd} ha detectado una alarma meteorológica (lluvia, viento, humedad). Revisar las lecturas de \texttt{rts2-sensord} en \texttt{rts2-mon} para identificar el sensor que ha disparado la alerta.
+
 \end{itemize}
 
 \end{document}
